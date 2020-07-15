@@ -6,7 +6,7 @@
 <center> <h1>Medical Imaging Bank Valencia Region 1</h1> </center>
 <!--<h1 style="text-align:center">Medical Imaging Bank Valencia Region</h1>-->
 <h2 style="text-align:center">Medical Imaging Data Structure</h2>
-<h2 style="text-align:center">BIDS Extension Proposal xx (BEP0xx)</h2>
+<h2 style="text-align:center">BIDS Extension Proposal 25 (BEP025)</h2>
 
 <p style="text-align:justify">
 In order to add to the scientific knowledge, methods that yield reliable and reproducible results must be used.
