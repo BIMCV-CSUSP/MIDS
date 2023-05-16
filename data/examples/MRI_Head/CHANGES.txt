@@ -1,0 +1,9 @@
+﻿1.0.1 2017-08-27
+  - DICOM information.
+1.0.0 2016-05-26
+  - Initial release.
+
+AUTHOR
+  - Jose Manuel Saborit Torres <jmsaborit@cipf.es>
+
+COPYRIGHT AND LICENSE

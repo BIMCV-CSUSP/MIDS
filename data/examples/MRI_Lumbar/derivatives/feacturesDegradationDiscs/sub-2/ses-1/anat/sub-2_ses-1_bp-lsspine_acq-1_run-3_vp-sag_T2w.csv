@@ -1,0 +1,16 @@
+user	disc	pfirrman	Disc Narrowing	Spondylolisthesis	Stenosis	Endplate Defects	Disc Prolapse	Modic Types	Information
+researcher01	L1-L2	1	1	0	0	0	0	0	
+researcher01	L2-L3	1	1	0	0	0	0	0	
+researcher01	L3-L4	1	1	0	0	0	0	0	
+researcher01	L4-L5	1	1	0	0	0	0	0	
+researcher01	L5-S1	1	1	0	0	0	0	0	
+researcher02	L1-L2	3	1	0	0	0	0	0	
+researcher02	L2-L3	1	3	0	0	0	2	2	test 1
+researcher02	L3-L4	5	1	0	0	0	0	0	
+researcher02	L4-L5	5	3	0	0	0	0	0	test 1
+researcher02	L5-S1	1	3	1	1	1	0	3	
+researcher03	L1-L2	1	1	0	1	0	0	0	test 1
+researcher03	L2-L3	5	1	0	0	0	0	3	
+researcher03	L3-L4	3	4	1	0	0	2	3	test 1
+researcher03	L4-L5	1	1	0	0	1	2	0	
+researcher03	L5-S1	4	3	0	0	0	0	0	test 1

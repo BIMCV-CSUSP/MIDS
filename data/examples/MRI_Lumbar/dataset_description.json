@@ -1,0 +1,12 @@
+{
+    "Name": "MRI_Lumbar",
+    "BIDSVersion":  "1.1.0",
+    "MIDSVersion":  "0.10.23",
+    "License": "CC BI 4.0",
+    "Authors": ["Jhon Saenz","CEIB-CSUSP"],
+    "Acknowledgements": "A special thanks to Jose Saborit for the help to format this data set in MIDS, to Joaquim Montell for the management of the XNAT platform, to María de la Iglesia Vayá, head of Lab. for her support; Thanks to the CEIB-CSUSP team of scientists, who developed the download, anonymization and scientific knowledge processes necessary to carry out this data set, and to the Public Health Department of Valencia for providing the data.",
+    "HowToAcknowledge": "Please cite this paper: ",
+    "Funding": ["Centre of Excellence and Technological Innovation in Bioimaging, Health Regional Ministry of Valencia and Public Health(CEIB-CSUSP), http://ceib.san.gva.es/ceib-cs", "Foundation for the Promotion of Health and Biomedical Research of Valencia Region (FISABIO), http://fisabio.san.gva.es/","Conselleria de Sanitat Universal i Salut Pública, http://www.san.gva.es"],
+    "ReferencesAndLinks": ["http://bimcv.cipf.es/2_projects/mids/", "http://bimcv.cipf.es/es/proyectos/midas-2/"],
+    "DatasetDOI": ""
+}

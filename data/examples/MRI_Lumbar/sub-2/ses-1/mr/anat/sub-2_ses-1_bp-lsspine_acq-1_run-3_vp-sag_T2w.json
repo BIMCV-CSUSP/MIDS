@@ -1,0 +1,881 @@
+{
+  "ResultSet": {
+    "Result": [
+      {
+        "desc": "File Meta Information Version",
+        "tag1": "(0002,0001)",
+        "tag2": "",
+        "value": "00\\01",
+        "vr": "OB"
+      },
+      {
+        "desc": "Media Storage SOP Class UID",
+        "tag1": "(0002,0002)",
+        "tag2": "",
+        "value": "1.2.840.10008.5.1.4.1.1.4",
+        "vr": "UI"
+      },
+      {
+        "desc": "Media Storage SOP Instance UID",
+        "tag1": "(0002,0003)",
+        "tag2": "",
+        "value": "1.2.840.113619.2.222.2025.1616754.15477.1466833583.399",
+        "vr": "UI"
+      },
+      {
+        "desc": "Transfer Syntax UID",
+        "tag1": "(0002,0010)",
+        "tag2": "",
+        "value": "1.2.840.10008.1.2.1",
+        "vr": "UI"
+      },
+      {
+        "desc": "Implementation Class UID",
+        "tag1": "(0002,0012)",
+        "tag2": "",
+        "value": "1.2.40.0.13.1.1",
+        "vr": "UI"
+      },
+      {
+        "desc": "Implementation Version Name",
+        "tag1": "(0002,0013)",
+        "tag2": "",
+        "value": "dcm4che-2.0",
+        "vr": "SH"
+      },
+      {
+        "desc": "Source Application Entity Title",
+        "tag1": "(0002,0016)",
+        "tag2": "",
+        "value": "CTP",
+        "vr": "AE"
+      },
+      {
+        "desc": "Specific Character Set",
+        "tag1": "(0008,0005)",
+        "tag2": "",
+        "value": "ISO_IR 100",
+        "vr": "CS"
+      },
+      {
+        "desc": "Image Type",
+        "tag1": "(0008,0008)",
+        "tag2": "",
+        "value": "ORIGINAL\\PRIMARY\\OTHER",
+        "vr": "CS"
+      },
+      {
+        "desc": "SOP Class UID",
+        "tag1": "(0008,0016)",
+        "tag2": "",
+        "value": "1.2.840.10008.5.1.4.1.1.4",
+        "vr": "UI"
+      },
+      {
+        "desc": "SOP Instance UID",
+        "tag1": "(0008,0018)",
+        "tag2": "",
+        "value": "1.2.840.113619.2.222.2025.1616754.15477.1466833583.399",
+        "vr": "UI"
+      },
+      {
+        "desc": "Study Date",
+        "tag1": "(0008,0020)",
+        "tag2": "",
+        "value": "20160625",
+        "vr": "DA"
+      },
+      {
+        "desc": "Series Date",
+        "tag1": "(0008,0021)",
+        "tag2": "",
+        "value": "20160625",
+        "vr": "DA"
+      },
+      {
+        "desc": "Acquisition Date",
+        "tag1": "(0008,0022)",
+        "tag2": "",
+        "value": "20160625",
+        "vr": "DA"
+      },
+      {
+        "desc": "Content Date",
+        "tag1": "(0008,0023)",
+        "tag2": "",
+        "value": "20160625",
+        "vr": "DA"
+      },
+      {
+        "desc": "Study Time",
+        "tag1": "(0008,0030)",
+        "tag2": "",
+        "value": "134718",
+        "vr": "TM"
+      },
+      {
+        "desc": "Series Time",
+        "tag1": "(0008,0031)",
+        "tag2": "",
+        "value": "134818",
+        "vr": "TM"
+      },
+      {
+        "desc": "Acquisition Time",
+        "tag1": "(0008,0032)",
+        "tag2": "",
+        "value": "134818",
+        "vr": "TM"
+      },
+      {
+        "desc": "Content Time",
+        "tag1": "(0008,0033)",
+        "tag2": "",
+        "value": "134818",
+        "vr": "TM"
+      },
+      {
+        "desc": "Accession Number",
+        "tag1": "(0008,0050)",
+        "tag2": "",
+        "value": "ceibcs_E19348",
+        "vr": "SH"
+      },
+      {
+        "desc": "Modality",
+        "tag1": "(0008,0060)",
+        "tag2": "",
+        "value": "MR",
+        "vr": "CS"
+      },
+      {
+        "desc": "Manufacturer",
+        "tag1": "(0008,0070)",
+        "tag2": "",
+        "value": "GE MEDICAL SYSTEMS",
+        "vr": "LO"
+      },
+      {
+        "desc": "Referring Physician's Name",
+        "tag1": "(0008,0090)",
+        "tag2": "",
+        "value": "",
+        "vr": "PN"
+      },
+      {
+        "desc": "Station Name",
+        "tag1": "(0008,1010)",
+        "tag2": "",
+        "value": "CASTMRI",
+        "vr": "SH"
+      },
+      {
+        "desc": "Study Description",
+        "tag1": "(0008,1030)",
+        "tag2": "",
+        "value": "MRI_LUMBAR",
+        "vr": "LO"
+      },
+      {
+        "desc": "Procedure Code Sequence",
+        "tag1": "(0008,1032)",
+        "tag2": "(0008,1032)",
+        "value": "",
+        "vr": "SQ"
+      },
+      {
+        "desc": "Code Value",
+        "tag1": "(0008,1032)",
+        "tag2": "(0008,0100)",
+        "value": "015001_RM816",
+        "vr": "SH"
+      },
+      {
+        "desc": "Coding Scheme Designator",
+        "tag1": "(0008,1032)",
+        "tag2": "(0008,0102)",
+        "value": "GEIIS",
+        "vr": "SH"
+      },
+      {
+        "desc": "Coding Scheme Version",
+        "tag1": "(0008,1032)",
+        "tag2": "(0008,0103)",
+        "value": "0",
+        "vr": "SH"
+      },
+      {
+        "desc": "Code Meaning",
+        "tag1": "(0008,1032)",
+        "tag2": "(0008,0104)",
+        "value": "RM LUMBAR",
+        "vr": "LO"
+      },
+      {
+        "desc": "Series Description",
+        "tag1": "(0008,103E)",
+        "tag2": "",
+        "value": "SAGT2LUMBAR",
+        "vr": "LO"
+      },
+      {
+        "desc": "Manufacturer's Model Name",
+        "tag1": "(0008,1090)",
+        "tag2": "",
+        "value": "SIGNA EXCITE",
+        "vr": "LO"
+      },
+      {
+        "desc": "Referenced Image Sequence",
+        "tag1": "(0008,1140)",
+        "tag2": "(0008,1140)",
+        "value": "",
+        "vr": "SQ"
+      },
+      {
+        "desc": "Referenced SOP Class UID",
+        "tag1": "(0008,1140)",
+        "tag2": "(0008,1150)",
+        "value": "1.2.840.10008.5.1.4.1.1.4",
+        "vr": "UI"
+      },
+      {
+        "desc": "Referenced SOP Instance UID",
+        "tag1": "(0008,1140)",
+        "tag2": "(0008,1155)",
+        "value": "1.2.840.113619.2.222.2025.1616754.15477.1466833583.320",
+        "vr": "UI"
+      },
+      {
+        "desc": "Referenced Image Sequence",
+        "tag1": "(0008,1140)",
+        "tag2": "(0008,1140)",
+        "value": "",
+        "vr": "SQ"
+      },
+      {
+        "desc": "Referenced SOP Class UID",
+        "tag1": "(0008,1140)",
+        "tag2": "(0008,1150)",
+        "value": "1.2.840.10008.5.1.4.1.1.4",
+        "vr": "UI"
+      },
+      {
+        "desc": "Referenced SOP Instance UID",
+        "tag1": "(0008,1140)",
+        "tag2": "(0008,1155)",
+        "value": "1.2.840.113619.2.222.2025.1616754.15477.1466833583.314",
+        "vr": "UI"
+      },
+      {
+        "desc": "Private Creator Data Element",
+        "tag1": "(0009,0010)",
+        "tag2": "",
+        "value": "GEMS_IDEN_01",
+        "vr": "LO"
+      },
+      {
+        "desc": "Private Creator Data Element",
+        "tag1": "(0009,0011)",
+        "tag2": "",
+        "value": "GEIIS",
+        "vr": "LO"
+      },
+      {
+        "desc": "Patient's Name",
+        "tag1": "(0010,0010)",
+        "tag2": "",
+        "value": "90070970630437776381142865766563279659",
+        "vr": "PN"
+      },
+      {
+        "desc": "Patient ID",
+        "tag1": "(0010,0020)",
+        "tag2": "",
+        "value": "35180663179348213717850348575679254082",
+        "vr": "LO"
+      },
+      {
+        "desc": "Patient's Birth Date",
+        "tag1": "(0010,0030)",
+        "tag2": "",
+        "value": "19960802",
+        "vr": "DA"
+      },
+      {
+        "desc": "Patient's Sex",
+        "tag1": "(0010,0040)",
+        "tag2": "",
+        "value": "F",
+        "vr": "CS"
+      },
+      {
+        "desc": "Patient's Age",
+        "tag1": "(0010,1010)",
+        "tag2": "",
+        "value": "019Y",
+        "vr": "AS"
+      },
+      {
+        "desc": "Patient's Weight",
+        "tag1": "(0010,1030)",
+        "tag2": "",
+        "value": "65",
+        "vr": "DS"
+      },
+      {
+        "desc": "Additional Patient History",
+        "tag1": "(0010,21B0)",
+        "tag2": "",
+        "value": "",
+        "vr": "LT"
+      },
+      {
+        "desc": "Private Creator Data Element",
+        "tag1": "(0011,0010)",
+        "tag2": "",
+        "value": "GEMS_PATI_01",
+        "vr": "LO"
+      },
+      {
+        "desc": "Scanning Sequence",
+        "tag1": "(0018,0020)",
+        "tag2": "",
+        "value": "SE",
+        "vr": "CS"
+      },
+      {
+        "desc": "Sequence Variant",
+        "tag1": "(0018,0021)",
+        "tag2": "",
+        "value": "OSP",
+        "vr": "CS"
+      },
+      {
+        "desc": "Scan Options",
+        "tag1": "(0018,0022)",
+        "tag2": "",
+        "value": "NPW\\VB_GEMS\\TRF_GEMS\\FILTERED_GEMS",
+        "vr": "CS"
+      },
+      {
+        "desc": "MR Acquisition Type",
+        "tag1": "(0018,0023)",
+        "tag2": "",
+        "value": "2D",
+        "vr": "CS"
+      },
+      {
+        "desc": "Angio Flag",
+        "tag1": "(0018,0025)",
+        "tag2": "",
+        "value": "N",
+        "vr": "CS"
+      },
+      {
+        "desc": "Slice Thickness",
+        "tag1": "(0018,0050)",
+        "tag2": "",
+        "value": "4.5",
+        "vr": "DS"
+      },
+      {
+        "desc": "Repetition Time",
+        "tag1": "(0018,0080)",
+        "tag2": "",
+        "value": "3260",
+        "vr": "DS"
+      },
+      {
+        "desc": "Echo Time",
+        "tag1": "(0018,0081)",
+        "tag2": "",
+        "value": "109.9",
+        "vr": "DS"
+      },
+      {
+        "desc": "Inversion Time",
+        "tag1": "(0018,0082)",
+        "tag2": "",
+        "value": "0",
+        "vr": "DS"
+      },
+      {
+        "desc": "Number of Averages",
+        "tag1": "(0018,0083)",
+        "tag2": "",
+        "value": "2",
+        "vr": "DS"
+      },
+      {
+        "desc": "Imaging Frequency",
+        "tag1": "(0018,0084)",
+        "tag2": "",
+        "value": "63.869726",
+        "vr": "DS"
+      },
+      {
+        "desc": "Imaged Nucleus",
+        "tag1": "(0018,0085)",
+        "tag2": "",
+        "value": "1H",
+        "vr": "SH"
+      },
+      {
+        "desc": "Echo Number(s)",
+        "tag1": "(0018,0086)",
+        "tag2": "",
+        "value": "1",
+        "vr": "IS"
+      },
+      {
+        "desc": "Magnetic Field Strength",
+        "tag1": "(0018,0087)",
+        "tag2": "",
+        "value": "1.5",
+        "vr": "DS"
+      },
+      {
+        "desc": "Spacing Between Slices",
+        "tag1": "(0018,0088)",
+        "tag2": "",
+        "value": "5.5",
+        "vr": "DS"
+      },
+      {
+        "desc": "Echo Train Length",
+        "tag1": "(0018,0091)",
+        "tag2": "",
+        "value": "29",
+        "vr": "IS"
+      },
+      {
+        "desc": "Percent Sampling",
+        "tag1": "(0018,0093)",
+        "tag2": "",
+        "value": "100",
+        "vr": "DS"
+      },
+      {
+        "desc": "Percent Phase Field of View",
+        "tag1": "(0018,0094)",
+        "tag2": "",
+        "value": "100",
+        "vr": "DS"
+      },
+      {
+        "desc": "Pixel Bandwidth",
+        "tag1": "(0018,0095)",
+        "tag2": "",
+        "value": "162.773",
+        "vr": "DS"
+      },
+      {
+        "desc": "Device Serial Number",
+        "tag1": "(0018,1000)",
+        "tag2": "",
+        "value": "00000000NPV24200",
+        "vr": "LO"
+      },
+      {
+        "desc": "Software Version(s)",
+        "tag1": "(0018,1020)",
+        "tag2": "",
+        "value": "11\\LX\\MR Software release:11.1_M4_0818.a",
+        "vr": "LO"
+      },
+      {
+        "desc": "Protocol Name",
+        "tag1": "(0018,1030)",
+        "tag2": "",
+        "value": "LUMBAR",
+        "vr": "LO"
+      },
+      {
+        "desc": "Heart Rate",
+        "tag1": "(0018,1088)",
+        "tag2": "",
+        "value": "0",
+        "vr": "IS"
+      },
+      {
+        "desc": "Cardiac Number of Images",
+        "tag1": "(0018,1090)",
+        "tag2": "",
+        "value": "0",
+        "vr": "IS"
+      },
+      {
+        "desc": "Trigger Window",
+        "tag1": "(0018,1094)",
+        "tag2": "",
+        "value": "0",
+        "vr": "IS"
+      },
+      {
+        "desc": "Reconstruction Diameter",
+        "tag1": "(0018,1100)",
+        "tag2": "",
+        "value": "320",
+        "vr": "DS"
+      },
+      {
+        "desc": "Receive Coil Name",
+        "tag1": "(0018,1250)",
+        "tag2": "",
+        "value": "USCTLBOT",
+        "vr": "SH"
+      },
+      {
+        "desc": "Acquisition Matrix",
+        "tag1": "(0018,1310)",
+        "tag2": "",
+        "value": "384\\0\\0\\224",
+        "vr": "US"
+      },
+      {
+        "desc": "In-plane Phase Encoding Direction",
+        "tag1": "(0018,1312)",
+        "tag2": "",
+        "value": "COL",
+        "vr": "CS"
+      },
+      {
+        "desc": "Flip Angle",
+        "tag1": "(0018,1314)",
+        "tag2": "",
+        "value": "90",
+        "vr": "DS"
+      },
+      {
+        "desc": "Variable Flip Angle Flag",
+        "tag1": "(0018,1315)",
+        "tag2": "",
+        "value": "N",
+        "vr": "CS"
+      },
+      {
+        "desc": "SAR",
+        "tag1": "(0018,1316)",
+        "tag2": "",
+        "value": "1.203500",
+        "vr": "DS"
+      },
+      {
+        "desc": "Patient Position",
+        "tag1": "(0018,5100)",
+        "tag2": "",
+        "value": "HFS",
+        "vr": "CS"
+      },
+      {
+        "desc": "Private Creator Data Element",
+        "tag1": "(0019,0010)",
+        "tag2": "",
+        "value": "GEMS_ACQU_01",
+        "vr": "LO"
+      },
+      {
+        "desc": "?",
+        "tag1": "(0019,10BB)",
+        "tag2": "",
+        "value": "0.000000",
+        "vr": "DS"
+      },
+      {
+        "desc": "?",
+        "tag1": "(0019,10BC)",
+        "tag2": "",
+        "value": "0.000000",
+        "vr": "DS"
+      },
+      {
+        "desc": "?",
+        "tag1": "(0019,10BD)",
+        "tag2": "",
+        "value": "0.000000",
+        "vr": "DS"
+      },
+      {
+        "desc": "?",
+        "tag1": "(0019,10D9)",
+        "tag2": "",
+        "value": "0.000000",
+        "vr": "DS"
+      },
+      {
+        "desc": "?",
+        "tag1": "(0019,10DF)",
+        "tag2": "",
+        "value": "0.000000",
+        "vr": "DS"
+      },
+      {
+        "desc": "?",
+        "tag1": "(0019,10E0)",
+        "tag2": "",
+        "value": "0.000000",
+        "vr": "DS"
+      },
+      {
+        "desc": "Study Instance UID",
+        "tag1": "(0020,000D)",
+        "tag2": "",
+        "value": "1.2.840.113619.2.182.10808617210140.1466503585.135941",
+        "vr": "UI"
+      },
+      {
+        "desc": "Series Instance UID",
+        "tag1": "(0020,000E)",
+        "tag2": "",
+        "value": "1.2.840.113619.2.222.2025.1616754.15477.1466833583.322",
+        "vr": "UI"
+      },
+      {
+        "desc": "Study ID",
+        "tag1": "(0020,0010)",
+        "tag2": "",
+        "value": "",
+        "vr": "SH"
+      },
+      {
+        "desc": "Series Number",
+        "tag1": "(0020,0011)",
+        "tag2": "",
+        "value": "2",
+        "vr": "IS"
+      },
+      {
+        "desc": "Acquisition Number",
+        "tag1": "(0020,0012)",
+        "tag2": "",
+        "value": "1",
+        "vr": "IS"
+      },
+      {
+        "desc": "Instance Number",
+        "tag1": "(0020,0013)",
+        "tag2": "",
+        "value": "12",
+        "vr": "IS"
+      },
+      {
+        "desc": "Image Position (Patient)",
+        "tag1": "(0020,0032)",
+        "tag2": "",
+        "value": "18.8998\\-173.346\\195.102",
+        "vr": "DS"
+      },
+      {
+        "desc": "Image Orientation (Patient)",
+        "tag1": "(0020,0037)",
+        "tag2": "",
+        "value": "-0\\1\\0\\0.0100102\\-0\\-0.99995",
+        "vr": "DS"
+      },
+      {
+        "desc": "Frame of Reference UID",
+        "tag1": "(0020,0052)",
+        "tag2": "",
+        "value": "1.2.840.113619.2.222.2025.1616754.15543.1466833318.370",
+        "vr": "UI"
+      },
+      {
+        "desc": "Laterality",
+        "tag1": "(0020,0060)",
+        "tag2": "",
+        "value": "",
+        "vr": "CS"
+      },
+      {
+        "desc": "Temporal Resolution",
+        "tag1": "(0020,0110)",
+        "tag2": "",
+        "value": "0",
+        "vr": "DS"
+      },
+      {
+        "desc": "Position Reference Indicator",
+        "tag1": "(0020,1040)",
+        "tag2": "",
+        "value": "",
+        "vr": "LO"
+      },
+      {
+        "desc": "Slice Location",
+        "tag1": "(0020,1041)",
+        "tag2": "",
+        "value": "-20.49824333",
+        "vr": "DS"
+      },
+      {
+        "desc": "Private Creator Data Element",
+        "tag1": "(0021,0010)",
+        "tag2": "",
+        "value": "GEMS_RELA_01",
+        "vr": "LO"
+      },
+      {
+        "desc": "?",
+        "tag1": "(0021,105A)",
+        "tag2": "",
+        "value": "0",
+        "vr": "SL"
+      },
+      {
+        "desc": "Private Creator Data Element",
+        "tag1": "(0023,0010)",
+        "tag2": "",
+        "value": "GEMS_STDY_01",
+        "vr": "LO"
+      },
+      {
+        "desc": "Private Creator Data Element",
+        "tag1": "(0025,0010)",
+        "tag2": "",
+        "value": "GEMS_SERS_01",
+        "vr": "LO"
+      },
+      {
+        "desc": "Private Creator Data Element",
+        "tag1": "(0027,0010)",
+        "tag2": "",
+        "value": "GEMS_IMAG_01",
+        "vr": "LO"
+      },
+      {
+        "desc": "Samples per Pixel",
+        "tag1": "(0028,0002)",
+        "tag2": "",
+        "value": "1",
+        "vr": "US"
+      },
+      {
+        "desc": "Photometric Interpretation",
+        "tag1": "(0028,0004)",
+        "tag2": "",
+        "value": "MONOCHROME2",
+        "vr": "CS"
+      },
+      {
+        "desc": "Rows",
+        "tag1": "(0028,0010)",
+        "tag2": "",
+        "value": "512",
+        "vr": "US"
+      },
+      {
+        "desc": "Columns",
+        "tag1": "(0028,0011)",
+        "tag2": "",
+        "value": "512",
+        "vr": "US"
+      },
+      {
+        "desc": "Pixel Spacing",
+        "tag1": "(0028,0030)",
+        "tag2": "",
+        "value": "0.624993\\0.625",
+        "vr": "DS"
+      },
+      {
+        "desc": "Bits Allocated",
+        "tag1": "(0028,0100)",
+        "tag2": "",
+        "value": "16",
+        "vr": "US"
+      },
+      {
+        "desc": "Bits Stored",
+        "tag1": "(0028,0101)",
+        "tag2": "",
+        "value": "16",
+        "vr": "US"
+      },
+      {
+        "desc": "High Bit",
+        "tag1": "(0028,0102)",
+        "tag2": "",
+        "value": "15",
+        "vr": "US"
+      },
+      {
+        "desc": "Pixel Representation",
+        "tag1": "(0028,0103)",
+        "tag2": "",
+        "value": "1",
+        "vr": "US"
+      },
+      {
+        "desc": "?",
+        "tag1": "(0028,0303)",
+        "tag2": "",
+        "value": "",
+        "vr": "CS"
+      },
+      {
+        "desc": "Window Center",
+        "tag1": "(0028,1050)",
+        "tag2": "",
+        "value": "628",
+        "vr": "DS"
+      },
+      {
+        "desc": "Window Width",
+        "tag1": "(0028,1051)",
+        "tag2": "",
+        "value": "1257",
+        "vr": "DS"
+      },
+      {
+        "desc": "Private Creator Data Element",
+        "tag1": "(0029,0010)",
+        "tag2": "",
+        "value": "GEMS_IMPS_01",
+        "vr": "LO"
+      },
+      {
+        "desc": "Performed Procedure Step Description",
+        "tag1": "(0040,0254)",
+        "tag2": "",
+        "value": "",
+        "vr": "LO"
+      },
+      {
+        "desc": "Private Creator Data Element",
+        "tag1": "(0043,0010)",
+        "tag2": "",
+        "value": "GEMS_PARM_01",
+        "vr": "LO"
+      },
+      {
+        "desc": "?",
+        "tag1": "(0043,1039)",
+        "tag2": "",
+        "value": "0\\2097152\\0\\0",
+        "vr": "IS"
+      },
+      {
+        "desc": "Private Creator Data Element",
+        "tag1": "(0903,0010)",
+        "tag2": "",
+        "value": "GEIIS PACS",
+        "vr": "LO"
+      },
+      {
+        "desc": "Private Creator Data Element",
+        "tag1": "(0905,0010)",
+        "tag2": "",
+        "value": "GEIIS",
+        "vr": "LO"
+      },
+      {
+        "desc": "Private Creator Data Element",
+        "tag1": "(7FD1,0010)",
+        "tag2": "",
+        "value": "GEIIS",
+        "vr": "LO"
+      }
+    ]
+  }
+}

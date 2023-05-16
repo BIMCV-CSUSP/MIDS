@@ -1,0 +1,10 @@
+	Protocol	acq	dir	folder	Manufacturer	ScanningSequence	SequenceVariant	ScanOptions	AngioFlag	MagneticFieldStrength	RepetitionTime	InversionTime	FlipAngle	EchoTime	SliceThickness
+1	FLAIR			anat	[Siemens]	[SE, SE\IR]	[SP\SK, SK\SP\MP]	[PFP\PFF\CG\RG\FS\PER, PFP\PFF\FS\PER, PFP\CG\RG\FS\PER]	N	[3.0]	[5.0]	[1.8, 1.65]	[120.0]	[0.393]	[1.0]
+2	T2w	swi		anat	[Siemens]	[GR]	[SK, SP]	[CG\RG\PER, PER]	N	[3.0]	[0.028]	 [-1]	[15.0]	[0.02]	[2.0]
+3	T2w			anat	[Siemens]	[SE]	[SP\SK]	[CG\RG\FS\PER]	N	[3.0]	[4.0]	 [-1]	[150.0]	[0.078]	[3.0]
+4	T1w	mprage		anat	[Siemens]	[GR, RM, GR\IR]	[SK, MTC\SS\OSP, SK\SP\MP]	[PFP\CG\RG\PER, PFP\PER, CG\RG\FS\PER, PFP\CG\RG\FS\PER, PFP\RG\FS, CG\RG\PER]	N	[3.0]	[2,2, 2,3]	[0.968, 0.900]	[8.0, 9.0]	[0.00223, 0.00293]	[1.2]
+5	PDT2			anat	[Siemens]	[SE]	[SP\SK, SK\SP]	[CG\RG\PER, PER]	N	[3.0]	[0.0175, 0.01875, 0.0225, 4.78]	 [-1]	[146.0, 142.0, 145.0, 131.0, 137.0, 138.0, 124.0, 135.0, 141.0, 143.0]	[0.009]	[3.0]
+6	T1w	ahead		anat	[Siemens]	[GR, EP]	[FS\PER, CG\RG\FS\PER]	[FS\PER, CG\RG\FS\PER]	N	[3.0]	[0.00315]	[8.0]	[8.0]	[0.00137]	[1.6]
+7	asl			perf	[Siemens]	[GR, EP]	[SK, SK\OSP]	[FS\PER, CG\RG\FS\PER]	N	[3.0]	[16.0, 36.8, 55.2, 4.6]	[-1]	[180.0, 160.0]	[0.017,0.0219]	[3.0, 4.5]
+8	dwi		AP	dwi	[Siemens]	[GR\EP]	[SK]	[CG\RG\FS\PER]	N	[3.0]	[8.9]	 [-1]	[90.0]	[0.078]	[2.0]
+9	dwi		PA	dwi	[Siemens]	[GR\EP]	[SK]	[CG\RG\FS\PER, FS\PER]	N	[3.0]	[8.9]	 [-1]	[90.0]	[0.078]	[2.0]
