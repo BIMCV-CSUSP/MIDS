@@ -191,13 +191,13 @@ class Session(dict):
         # print("\033[18;0H\u001b[0K", end="",flush=True)
         #self.get_list_struct_report(path_download, bool_list_resources, overwrite=False, verbose=verbose)
 
-        self.get_list_assessors(verbose)
-        for resource_obj in self.dict_assessors.values():
+        # self.get_list_assessors(verbose)
+        # for resource_obj in self.dict_assessors.values():
 
-            resource_obj.download(
-                path_download,
-                bool_list_resources=bool_list_resources,
-                overwrite=overwrite, verbose=verbose)
+        #     resource_obj.download(
+        #         path_download,
+        #         bool_list_resources=bool_list_resources,
+        #         overwrite=overwrite, verbose=verbose)
 
         self.get_list_session_resources(verbose)
         for resource_obj in self.dict_resources.values():

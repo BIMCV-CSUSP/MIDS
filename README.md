@@ -87,34 +87,38 @@ This sorfware allow the user to Download one project into XNAT platform (--versi
 An example of execution is:
 
 ```sh
-python3.5 main.py -w Project_id -i dirXNAT -o dirOutput
+python3 -m xnat2mids -i DIR_TO_SAVE -w XNAT_WEB -u USER -b BODYPART -v
 ```
 
 ### Options
 
-there are 2 funtions in this code:
 
-  Download one project from xnat aplicatión:
 
-        download one project from xnat aplicatión:
+arguments:
 
-        arguments:
+  +  **-w (--web) XNAT_WEB** The ULR page where XNAT is.
+  + **-i (--input) PATH** The directory where the the project will created.
+  + **-u (--user) [USER]** The username to loggin in XNAT. If not write a username, It loggin as guest.
+  + **-bp (--body-part) [BODY_PART]** Optional argument to clarify which part of the body are in the images. This argument is only used if the body part dicom tag is not found in the image.
+  + **-v (--verbose)** 
 
-            + Prefix  -w --web PAGE_WEB        1) The ULR page where XNAT is.
-            + Prefix  -p --project [PROJECTS]  2) The project name to download
-            + Prefix  -i --input PATH	   3) the directfory where the files
-                                                  will be downloaded
-            + Prefix  -u --user [USER]         4) The username to loggin in XNAT
-                                                If not write a username, It
-                                                loggin as guest.
+  If the xnat project is already downloaded. you can run the command by removing the -w and -u arguments.
 
-        Convert the xnat directories of the project in MIDS format:
-        arguments:
+<a id='During Execution'></a>
+## 4. During Execution
+When we execute the programme, it will ask for the xnat user (if it was not set as an argument) and the password of our user.
 
-            + Prefix  -i --input  PATH   1) the directfory where the files will
-                                            be downloaded
-            + Prefix  -o --output PATH   2) Directory where the MIDS model
-                                            is applied.
+
+Then The program will ask us which projects we want to pass to BIDS/MIDS. Just enter the numbers associated with the projects separated with space.
+
+    user: AAAAAAA
+    password:
+
+    1) p0012023         2) p0022021         3) p0022022         4) p0022023         5) p0032021         
+    6) p0032023         7) p0042021         8) p0052021         9) p0052022         10) p0062021         
+     
+    Choose the project: 1 3 4 
+
 <a id='future'></a>
 ## 4. Future Lines
 

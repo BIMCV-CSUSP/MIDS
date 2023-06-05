@@ -51,12 +51,5 @@ class Scan(dict):
                     bool_list_resources=bool_list_resources,
                     overwrite=overwrite, verbose=verbose)
             except requests.exceptions.RequestException as e:
-                complet_path = (path_download + dict_path["path_download"](
-                    self["session"]["subject"]["ID"],
-                    self["session"]["ID"],
-                    self["ID"],
-                    "NIFTI"
-                )
-                                )
                 print(e)
         print(format_message(self.level_verbose, self.level_tab, "\u001b[0K"), end="", flush=True)

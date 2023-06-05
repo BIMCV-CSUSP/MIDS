@@ -31,6 +31,7 @@ dict_mr_keys = {
     'ScanningSequence': '00180020',
     'SequenceVariant': '00180021',
     'ScanOptions': '00180022',
+    'ImageType': '00080008',
     'AngioFlag': '00180025',
     'MagneticFieldStrength': '00180087',
     'RepetitionTime': '00180080',
@@ -95,7 +96,7 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part):
     procedure_class_light = LightProcedure()
     for subject_xnat_path in tqdm(xnat_data_path.glob('*/')):
         if "_S" not in subject_xnat_path.name:continue
-        num_sessions = len(list(subject_xnat_path.glob('*/')))
+        # num_sessions = len(list(subject_xnat_path.glob('*/')))
         procedure_class_mr.reset_indexes()
         procedure_class_light.reset_indexes()
         for sessions_xnat_path in subject_xnat_path.glob('*/'):
@@ -135,7 +136,7 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part):
                     
                     print("---------", len(list(folder_conversion.iterdir())))
                     if len(list(folder_conversion.iterdir())) == 0: continue
-                    
+                    #continue
                     dict_json = load_json(folder_conversion.joinpath(list(folder_conversion.glob("*.json"))[0]))
 
 
@@ -146,7 +147,10 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part):
                     acquisition_date_time = dict_json.get("AcquisitionDateTime", "")
                     body_part = dict_json.get("BodyPartExamined", body_part)
                     acquisition_date_time_check = aquisition_date_pattern_comp.search(acquisition_date_time)
-                    time_values = list(int (x) for x in acquisition_date_time_check.groups())
+                    try:
+                        time_values = list(int (x) for x in acquisition_date_time_check.groups())
+                    except AttributeError as e:
+                         continue
                     acquisition_date_time_correct = f"\
 {time_values[0]:04d}-\
 {time_values[1]:02d}-\
@@ -171,7 +175,7 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part):
                             
                             protocol, acq, task, ce, rec, dir_, part, folder_BIDS = tagger.classification_by_min_max(json_adquisitions)
                             print(protocol, acq, task, ce, rec, dir_, part, folder_BIDS)
-                            continue
+                            
                             procedure_class_mr.control_sequences(
                                 folder_conversion, mids_session_path, session_name, protocol, acq, dir_, folder_BIDS, body_part
                             )
