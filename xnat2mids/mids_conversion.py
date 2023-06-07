@@ -112,7 +112,7 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part):
 
             mids_session_path = mids_data_path.joinpath(subject_name, session_name)
             xml_session_rois = list(sessions_xnat_path.rglob('*.xml'))
-            #print(f"1: {mids_session_path=}")
+            #print(f"1: {mids_session_path}")
             tagger = Tagger()
             tagger.load_table_protocol(
                 './xnat2mids/protocols/protocol_RM_brain.tsv'
@@ -162,8 +162,8 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part):
 "
                     # print()
                     # print(modality, study_description, ProtocolName, image_type)
-                    print(f"{study_description=}")
-                    print(f"{Protocol_name=}")
+                    print(f"{study_description}")
+                    print(f"{Protocol_name}")
                     if modality == "MR":
                         # via BIDS protocols
                         #if study_description in LUMBAR_PROTOCOLS_ACEPTED:

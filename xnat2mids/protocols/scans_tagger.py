@@ -29,10 +29,10 @@ class Tagger:
         image_type = dict_atrubutes["ImageType"]
         #sequence_name = dict_atrubutes["SequenceName"]
         #image_type = dict_atrubutes["ImageType"]
-        print(f"{scaning_sequence=:}")
-        print(f"{sequence_variant=:}")
-        print(f"{scan_options=:}")
-        print(f"{image_type=}")
+        print(f"{scaning_sequence}")
+        print(f"{sequence_variant}")
+        print(f"{scan_options}")
+        print(f"{image_type}")
         #scaning_sequence = scaning_sequence if type(scaning_sequence) is str else "\\".join(scaning_sequence)
               
         table_protocol_SS = self.table_protocols[[

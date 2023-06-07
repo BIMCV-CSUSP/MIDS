@@ -34,7 +34,7 @@ class LightProcedure(Procedures):
             df_aux.index = numpy.arange(1, len(df_aux) + 1)
             print(len(df_aux))
             activate_run = True if len(df_aux) > 1 else False
-            print(f"{activate_run=}")
+            print(f"{activate_run}")
             for index, row in df_aux.iterrows():
                 activate_acq_partioned = True if len(row['run']) > 1 else False
                 for acq, file_ in enumerate(sorted(row['run'])):
@@ -64,7 +64,7 @@ class LightProcedure(Procedures):
         rec = f"{key_list[1] if key_list[1] else ''}"
         chunk = f"{num_part if activate_acq_partioned else ''}"
         run = f"{num_run if activate_run else ''}"
-        print(f"{run=}")
+        print(f"{run}")
         # print(f"{key=}")
         return "_".join([
             part for part in [
