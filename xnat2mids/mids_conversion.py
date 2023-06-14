@@ -16,7 +16,10 @@ from tqdm import tqdm
 
 adquisition_date_pattern = r"(?P<year>\d+)-(?P<month>\d+)-(?P<day>\d+)T(?P<hour>\d+):(?P<minutes>\d+):(?P<seconds>\d+).(?P<ms>\d+)"
 subses_pattern = r"[A-z]+(?P<prefix_sub>\d*)?(_S)(?P<suffix_sub>\d+)/[A-z]+\-?[A-z]*(?P<prefix_ses>\d*)?(_E)(?P<suffix_ses>\d+)"
+prostate_pattern = r"(?:(?:(?:diff?|dwi)(?:\W|_)(?:.*)(?:b\d+))|dif 2000)|(?:adc|Apparent)|prop|blade|fse|tse"
+
 aquisition_date_pattern_comp = re.compile(adquisition_date_pattern)
+prostate_pattern_comp = re.compile(prostate_pattern, re.I)
 dict_keys = {
     'Modality': '00080060',
     'SeriesDescription': '0008103E',
@@ -108,14 +111,14 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part):
             #print('subject,', findings.group('prefix_sub'), findings.group('suffix_sub'))
             #print('session,', findings.group('prefix_ses'), findings.group('suffix_ses'))
             subject_name = f"sub-{findings.group('prefix_sub')}S{findings.group('suffix_sub')}"
-            session_name = f"ses-{findings.group('prefix_ses')}S{findings.group('suffix_ses')}"
+            session_name = f"ses-{findings.group('prefix_ses')}E{findings.group('suffix_ses')}"
 
             mids_session_path = mids_data_path.joinpath(subject_name, session_name)
             xml_session_rois = list(sessions_xnat_path.rglob('*.xml'))
             #print(f"1: {mids_session_path=}")
             tagger = Tagger()
             tagger.load_table_protocol(
-                './xnat2mids/protocols/protocol_RM_brain.tsv'
+                './xnat2mids/protocols/protocol_RM_prostate.tsv'
             )
             if not sessions_xnat_path.joinpath("scans").exists(): continue
             for scans_path in sessions_xnat_path.joinpath("scans").iterdir():
@@ -126,13 +129,13 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part):
                     
                     if num_jsons ==0:
                         continue
-                    if num_jsons>0:
+                    if num_jsons>6:
                         path_dicoms= list(scans_path.joinpath("resources").rglob("*.dcm"))[0].parent
                         folder_conversion = dicom2niix(path_dicoms, options_dcm2niix) #.joinpath("resources")
                     else:
-                        continue
-                        # path_dicoms= list(scans_path.joinpath("resources").rglob("*.dcm"))[0].parent
-                        # folder_conversion = dicom2png(path_dicoms, options_dcm2niix) #.joinpath("resources")
+                        
+                        path_dicoms= list(scans_path.joinpath("resources").rglob("*.dcm"))[0].parent
+                        folder_conversion = dicom2png(path_dicoms, options_dcm2niix) #.joinpath("resources")
                     
                     print("---------", len(list(folder_conversion.iterdir())))
                     if len(list(folder_conversion.iterdir())) == 0: continue
@@ -166,8 +169,9 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part):
                     print(f"{Protocol_name=}")
                     if modality == "MR":
                         # via BIDS protocols
-                        #if study_description in LUMBAR_PROTOCOLS_ACEPTED:
-                            
+                        searched_prost = prostate_pattern_comp.search(study_description)
+                        if searched_prost and "tracew" not in study_description.lower():
+
                             
                             json_adquisitions = {
                                 f'{k}': dict_json.get(k, -1) for k in dict_mr_keys.keys()
@@ -185,6 +189,7 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part):
                         acq = "" if "ORIGINAL" in image_type else "opacitysubstract"
                         # print(laterality, acq)
                         procedure_class_light.control_image(folder_conversion, mids_session_path.joinpath("mim-light"), session_name, "op", acq, laterality, acquisition_date_time_correct)
+        
         procedure_class_mr.copy_sessions(subject_name)
         procedure_class_light.copy_sessions(subject_name)
 
@@ -192,6 +197,7 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part):
 participants_header = ['participant', 'modalities', 'body_parts', 'patient_birthday', 'age', 'gender']
 participants_keys = ['Modality', 'BodyPartExamined', 'PatientBirthDate', 'PatientSex', 'AcquisitionDateTime']
 session_header = ['session', 'acquisition_date_Time',]
+
 def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
     """
         This function allows the user to create a table in format ".tsv"

@@ -62,7 +62,7 @@ class LightProcedure(Procedures):
         key_list = json.loads(key)
         # print(num_part, activate_acq_partioned)
         rec = f"{key_list[1] if key_list[1] else ''}"
-        chunk = f"{num_part if activate_acq_partioned else ''}"
+        chunk = f"{num_part+1 if activate_acq_partioned else ''}"
         run = f"{num_run if activate_run else ''}"
         print(f"{run=}")
         # print(f"{key=}")

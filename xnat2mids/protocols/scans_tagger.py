@@ -23,45 +23,60 @@ class Tagger:
         print(dict_atrubutes)
         # targetScan = pd.DataFrame.from_dict([dict_atrubutes])
         # Verify to which scan group corresponds
+        Manufacturer = dict_atrubutes["Manufacturer"]
         scaning_sequence = dict_atrubutes["ScanningSequence"]
         sequence_variant = dict_atrubutes["SequenceVariant"]
         scan_options = dict_atrubutes["ScanOptions"]
         image_type = dict_atrubutes["ImageType"]
         #sequence_name = dict_atrubutes["SequenceName"]
         #image_type = dict_atrubutes["ImageType"]
+        print(f"{Manufacturer=:}")
         print(f"{scaning_sequence=:}")
-        print(f"{sequence_variant=:}")
+        print(f"{scaning_sequence=:}")
+        print(f"{sequence_variant=:}, {type(sequence_variant)}")
         print(f"{scan_options=:}")
         print(f"{image_type=}")
         #scaning_sequence = scaning_sequence if type(scaning_sequence) is str else "\\".join(scaning_sequence)
-              
-        table_protocol_SS = self.table_protocols[[
-            any([True for s in json.loads(l) if s == scaning_sequence])
-            for l in list(self.table_protocols["ScanningSequence"])
+        
+
+        table_protocol_M = self.table_protocols[[
+            any([True for s in json.loads(l) if s == Manufacturer])
+            for l in list(self.table_protocols["Manufacturer"])
         ]]
         
-        table_protocol_SS_SV = table_protocol_SS[[
-            any([True for s in json.loads(l) if s == sequence_variant])
-            for l in list(table_protocol_SS["SequenceVariant"])
+
+        table_protocol_M_SS = table_protocol_M[[
+            any([True for s in json.loads(l) if s == scaning_sequence])
+            for l in list(table_protocol_M["ScanningSequence"])
         ]]
-        table_protocol_SS_SV_SO = table_protocol_SS_SV[[
+        
+        table_protocol_M_SS_SV = table_protocol_M_SS[[
+            any([True for s in json.loads(l) if s == sequence_variant])
+            for l in list(table_protocol_M_SS["SequenceVariant"])
+        ]]
+        
+        table_protocol_M_SS_SV_SO = table_protocol_M_SS_SV[[
             any([True for s in json.loads(l) if s == scan_options])
-            for l in list(table_protocol_SS_SV["ScanOptions"])
+            for l in list(table_protocol_M_SS_SV["ScanOptions"])
         ]]
 
-        table_protocol_SS_SV_SO_IT = table_protocol_SS_SV_SO[[
+        table_protocol_M_SS_SV_SO_IT = table_protocol_M_SS_SV_SO[[
             any([True for s in json.loads(l) if s == image_type])
-            for l in list(table_protocol_SS_SV_SO["ImageType"])
+            for l in list(table_protocol_M_SS_SV_SO["ImageType"])
         ]]
-        table_protocols = table_protocol_SS_SV_SO_IT
+        table_protocols = table_protocol_M_SS_SV_SO_IT
         # print("#"*40, "table_protocol_SS", "#"*40)
         # print(table_protocol_SS)
-        print("#" * 40, "table_protocol_SS_VS", "#" * 40)
-        print(table_protocol_SS_SV[["Protocol", "acq"]])
-        print("#" * 40, "table_protocol_SS_VS", "#" * 40)
-        print(table_protocol_SS_SV_SO[["Protocol", "acq"]])
-        print("#" * 40, "table_protocol_SS_VS", "#" * 40)
-        print(table_protocol_SS_SV_SO[["Protocol", "acq"]])
+        print("#" * 40, "table_protocol_M", "#" * 40)
+        print(table_protocol_M[["Protocol", "acq"]])
+        print("#" * 40, "table_protocol_M_SS", "#" * 40)
+        print(table_protocol_M_SS[["Protocol", "acq"]])
+        print("#" * 40, "table_protocol_M_SS_SV", "#" * 40)
+        print(table_protocol_M_SS_SV[["Protocol", "acq"]])
+        print("#" * 40, "table_protocol_M_SS_VS_SO", "#" * 40)
+        print(table_protocol_M_SS_SV_SO[["Protocol", "acq"]])
+        print("#" * 40, "table_protocol_M_SS_VS_SO_IT", "#" * 40)
+        print(table_protocol_M_SS_SV_SO_IT[["Protocol", "acq"]])
         # print(f"{dict_atrubutes=}")
         matrix = []
         # print(list(dict_atrubutes.keys())[-5:])
