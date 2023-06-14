@@ -108,7 +108,7 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part):
             #print('subject,', findings.group('prefix_sub'), findings.group('suffix_sub'))
             #print('session,', findings.group('prefix_ses'), findings.group('suffix_ses'))
             subject_name = f"sub-{findings.group('prefix_sub')}S{findings.group('suffix_sub')}"
-            session_name = f"ses-{findings.group('prefix_ses')}S{findings.group('suffix_ses')}"
+            session_name = f"ses-{findings.group('prefix_ses')}E{findings.group('suffix_ses')}"
 
             mids_session_path = mids_data_path.joinpath(subject_name, session_name)
             xml_session_rois = list(sessions_xnat_path.rglob('*.xml'))
@@ -126,13 +126,12 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part):
                     
                     if num_jsons ==0:
                         continue
-                    if num_jsons>0:
+                    if num_jsons>6:
                         path_dicoms= list(scans_path.joinpath("resources").rglob("*.dcm"))[0].parent
                         folder_conversion = dicom2niix(path_dicoms, options_dcm2niix) #.joinpath("resources")
                     else:
-                        continue
-                        # path_dicoms= list(scans_path.joinpath("resources").rglob("*.dcm"))[0].parent
-                        # folder_conversion = dicom2png(path_dicoms, options_dcm2niix) #.joinpath("resources")
+                        path_dicoms= list(scans_path.joinpath("resources").rglob("*.dcm"))[0].parent
+                        folder_conversion = dicom2png(path_dicoms, options_dcm2niix) #.joinpath("resources")
                     
                     print("---------", len(list(folder_conversion.iterdir())))
                     if len(list(folder_conversion.iterdir())) == 0: continue
@@ -180,7 +179,7 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part):
                                 folder_conversion, mids_session_path, session_name, protocol, acq, dir_, folder_BIDS, body_part
                             )
                     
-                    if modality == "OP":
+                    if modality in ["OP", "SC", "XC", "OT"]:
                         laterality = dict_json.get("Laterality")
                         acq = "" if "ORIGINAL" in image_type else "opacitysubstract"
                         # print(laterality, acq)
