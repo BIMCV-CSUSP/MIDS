@@ -17,7 +17,10 @@ from tqdm import tqdm
 
 adquisition_date_pattern = r"(?P<year>\d+)-(?P<month>\d+)-(?P<day>\d+)T(?P<hour>\d+):(?P<minutes>\d+):(?P<seconds>\d+).(?P<ms>\d+)"
 subses_pattern = r"[A-z]+(?P<prefix_sub>\d*)?(_S)(?P<suffix_sub>\d+)/[A-z]+\-?[A-z]*(?P<prefix_ses>\d*)?(_E)(?P<suffix_ses>\d+)"
+prostate_pattern = r"(?:(?:(?:diff?|dwi)(?:\W|_)(?:.*)(?:b\d+))|dif 2000)|(?:adc|Apparent)|prop|blade|fse|tse"
+
 aquisition_date_pattern_comp = re.compile(adquisition_date_pattern)
+prostate_pattern_comp = re.compile(prostate_pattern, re.I)
 dict_keys = {
     'Modality': '00080060',
     'SeriesDescription': '0008103E',
@@ -166,8 +169,9 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part):
                     print(f"{Protocol_name}")
                     if modality == "MR":
                         # via BIDS protocols
-                        #if study_description in LUMBAR_PROTOCOLS_ACEPTED:
-                            
+                        searched_prost = prostate_pattern_comp.search(study_description)
+                        if searched_prost and "tracew" not in study_description.lower():
+
                             
                             json_adquisitions = {
                                 f'{k}': dict_json.get(k, -1) for k in dict_mr_keys.keys()
@@ -185,6 +189,7 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part):
                         acq = "" if "ORIGINAL" in image_type else "opacitysubstract"
                         # print(laterality, acq)
                         procedure_class_light.control_image(folder_conversion, mids_session_path.joinpath("mim-light"), session_name, "op", acq, laterality, acquisition_date_time_correct)
+        
         procedure_class_mr.copy_sessions(subject_name)
         procedure_class_light.copy_sessions(subject_name)
 
@@ -193,6 +198,8 @@ participants_header = ['participant_id', 'participant_pseudo_id', 'modalities', 
 participants_keys = ['PatientID','Modality', 'BodyPartExamined', 'PatientBirthDate', 'PatientSex', 'AcquisitionDateTime']
 session_header = ['session_id','session_pseudo_id', 'acquisition_date_Time',]
 sessions_keys = ['AccessionNumber', 'AcquisitionDateTime']
+
+
 def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
     """
         This function allows the user to create a table in format ".tsv"

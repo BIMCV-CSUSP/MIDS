@@ -29,6 +29,7 @@ class Tagger:
         scan_options = dict_atrubutes["ScanOptions"]
         image_type = dict_atrubutes["ImageType"]
         #image_type = dict_atrubutes["ImageType"]
+
         print(f"{Manufacturer}")
         print(f"{scaning_sequence}")
         print(f"{sequence_variant}, {type(sequence_variant)}")
@@ -43,6 +44,7 @@ class Tagger:
         ]]
         print("#" * 40, "table_protocol_M", "#" * 40)
         print(table_protocol_M[["Protocol", "acq"]])
+
 
         table_protocol_M_SS = table_protocol_M[[
             any([True for s in json.loads(l) if s == scaning_sequence])
@@ -65,6 +67,7 @@ class Tagger:
             for l in list(table_protocol_M_SS_SV["ScanOptions"])
         ]]
 
+
         print("#" * 40, "table_protocol_M_SS_VS_SO", "#" * 40)
         print(table_protocol_M_SS_SV_SO[["Protocol", "acq"]])
 
@@ -79,9 +82,7 @@ class Tagger:
         table_protocols = table_protocol_M_SS_SV_SO_IT
         # print("#"*40, "table_protocol_SS", "#"*40)
         # print(table_protocol_SS)
-        
-        
-        
+
         # print(f"{dict_atrubutes=}")
         matrix = []
         # print(list(dict_atrubutes.keys())[-5:])
