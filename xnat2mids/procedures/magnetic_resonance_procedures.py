@@ -24,8 +24,8 @@ class ProceduresMR:
              "" if body_part.lower() in body_part_bids else "mim-mr",
             folder_BIDS
         )
-        print(f'{folder_image_mids=}')
-        folder_image_mids.mkdir(parents=True, exist_ok=True)
+        
+        #folder_image_mids.mkdir(parents=True, exist_ok=True)
 
 
 
@@ -43,7 +43,7 @@ class ProceduresMR:
 
         len_nifti_files = len(nifti_files)
         if len_nifti_files == 0: return
-
+        folder_image_mids.mkdir(parents=True, exist_ok=True)
         # This is a counter for several nifties in one adquisition
 
         protocol_label = f'{protocol}'
@@ -112,7 +112,7 @@ class ProceduresMR:
                 f'dir-{keys[2]}' if keys[2] else '',
                 f'run-{num_run}' if activate_run else '',
                 (f'chunk-{chunk}') if activate_acq_partioned else '',
-                '' if keys[3].lower() in body_part_bids else f'bp-{keys[3]}',
+                '' if keys[3].lower() in body_part_bids else f'bp-{keys[3].lower()}',
                 f'desc-{keys[4][num_part-1]}' if keys[3].lower() in body_part_bids else f'vp-{keys[4][num_part-1]}',
                 keys[5]
             ] if part != ''
