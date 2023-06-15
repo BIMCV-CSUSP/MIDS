@@ -15,14 +15,10 @@ This function allows the user to save one tag dicom in an archive json
 """
 
 
-def add_tag_dicom(tag, description, value, json_file_path):
+def add_tags_dicom(tag_dict, json_file_path):
     json_file = load_json(json_file_path)
-    for i in range(len(json_file["ResultSet"]["Result"])):
-        if json_file["ResultSet"]["Result"][i]["tag1"] == tag:
-            json_file["ResultSet"]["Result"][i]["value"] = value
-            break
-    else:
-        json_file["ResultSet"]["Result"].append({"tag1":tag, "tag2":"", "desc":description, "value":value})
+    for tag, value in tag_dict.items():
+        json_file[tag] = value
     save_json(json_file, json_file_path)
 
 

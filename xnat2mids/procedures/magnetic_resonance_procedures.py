@@ -103,7 +103,7 @@ class ProceduresMR:
         print(num_part, activate_acq_partioned)
         acq = f"{keys[1] if keys[1] else ''}"
         chunk = f"{num_part if activate_acq_partioned else ''}"
-        print(f"{keys=}")
+        print(f"{keys}")
         return "_".join([
             part for part in [
                 subject_name,

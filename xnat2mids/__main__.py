@@ -39,23 +39,7 @@ Description:
     This application allow the user to download one project on XNAT and
     transform this project in MIDS format
 
-    There are 2 functions in this code:
-        download one project from xnat application:
-        arguments:
-            Prefix  -w --web PAGE_WEB        1) The URL page where XNAT is.
-            Prefix  -p --project [PROJECTS]  2) The project name to download
-            Prefix  -i --input PATH          3) the directory where the files
-                                                will be downloaded
-            Prefix  -u --user [USER]         4) The username to login in XNAT
-                                                If not write a username, It
-                                                loggin as guest.
-
-        Convert the xnat directories of the project in MIDS format:
-        arguments:
-            Prefix      -i --input      PATH   1) the directory where the files will
-                                        be downloaded
-            Prefix      -o --output     PATH   2) Directory where the MIDS model
-                                        is applied.
+    
 """
 ###############################################################################
 # Imports
@@ -93,49 +77,9 @@ def main():
     This sorfware allows the user to Download one project into XNAT platform
     and convert the XNAT images directory in MIDS directory.
 
-    The aplication execution needs Python --version >= 3.5.
+    The aplication execution needs Python --version >= 3.6.7
 
-    there are 2 functions in this code:
-
-      Download temporary projects from xnat application:
-
-         arguments:
-          + Prefix    -w --web PAGE_WEB         1) The URL page where XNAT is.
-
-          + Prefix    -u --user [USER]          2) The username to login in XNAT
-                                                If not write a username, It logins
-                                                as guest.
-
-          + Prefix    -i --input INPUT          4) The directory where the
-                                                files will be downloaded.
-
-          + Prefix    -t --types [sdnbr]         5) Download types of MRI images
-                                                   included in xnat
-                                                   - d = dicom + dicom metadata in
-                                                         folder NIFTI
-                                                   - n = nifti or png if image is
-                                                         one slide (2D) + roi
-                                                   - b = BIDS (only in CENTRAL XNAT)
-                                                   - r = Structural report
-                                                   default = nr
-
-
-          + Prefix    --overwrite                5) Overwrite download files
-
-
-      Convert the xnat directories of the project in MIDS format:
-
-        arguments:
-
-          + Prefix    -i --input INPUT          1) The directory where the files
-                                                will be downloaded.
-
-          + Prefix    -o --output OUTPUT        2) Directory where the MIDS model
-                                                is applied.
-          + Prefix    -bp --body-part           3) Specify which part of the body are 
-                                                    in the dataset(A clear dataset with
-                                                    only one part are needed)
-        """
+    """
     )
     parser.add_argument('-w', '--web', type=str, default=None,
                         help='The URL page where XNAT is.')

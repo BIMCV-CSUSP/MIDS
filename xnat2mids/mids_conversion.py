@@ -6,6 +6,7 @@ from datetime import datetime
 import pandas
 
 from xnat2mids.conversion.io_json import load_json
+from xnat2mids.conversion.io_json import add_tags_dicom
 from xnat2mids.procedures.magnetic_resonance_procedures import ProceduresMR
 from xnat2mids.procedures.light_procedures import LightProcedure
 from xnat2mids.protocols.scans_tagger import Tagger
@@ -115,7 +116,7 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part):
 
             mids_session_path = mids_data_path.joinpath(subject_name, session_name)
             xml_session_rois = list(sessions_xnat_path.rglob('*.xml'))
-            #print(f"1: {mids_session_path=}")
+            #print(f"1: {mids_session_path}")
             tagger = Tagger()
             tagger.load_table_protocol(
                 './xnat2mids/protocols/protocol_RM_prostate.tsv'
@@ -133,7 +134,6 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part):
                         path_dicoms= list(scans_path.joinpath("resources").rglob("*.dcm"))[0].parent
                         folder_conversion = dicom2niix(path_dicoms, options_dcm2niix) #.joinpath("resources")
                     else:
-                        
                         path_dicoms= list(scans_path.joinpath("resources").rglob("*.dcm"))[0].parent
                         folder_conversion = dicom2png(path_dicoms, options_dcm2niix) #.joinpath("resources")
                     
@@ -165,8 +165,8 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part):
 "
                     # print()
                     # print(modality, study_description, ProtocolName, image_type)
-                    print(f"{study_description=}")
-                    print(f"{Protocol_name=}")
+                    print(f"{study_description}")
+                    print(f"{Protocol_name}")
                     if modality == "MR":
                         # via BIDS protocols
                         searched_prost = prostate_pattern_comp.search(study_description)
@@ -184,7 +184,7 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part):
                                 folder_conversion, mids_session_path, session_name, protocol, acq, dir_, folder_BIDS, body_part
                             )
                     
-                    if modality == "OP":
+                    if modality in ["OP", "SC", "XC", "OT"]:
                         laterality = dict_json.get("Laterality")
                         acq = "" if "ORIGINAL" in image_type else "opacitysubstract"
                         # print(laterality, acq)
