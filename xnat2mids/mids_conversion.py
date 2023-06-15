@@ -6,6 +6,7 @@ from datetime import datetime
 import pandas
 
 from xnat2mids.conversion.io_json import load_json
+from xnat2mids.conversion.io_json import add_tags_dicom
 from xnat2mids.procedures.magnetic_resonance_procedures import ProceduresMR
 from xnat2mids.procedures.light_procedures import LightProcedure
 from xnat2mids.protocols.scans_tagger import Tagger
@@ -115,7 +116,7 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part):
             #print(f"1: {mids_session_path}")
             tagger = Tagger()
             tagger.load_table_protocol(
-                './xnat2mids/protocols/protocol_RM_brain.tsv'
+                './xnat2mids/protocols/protocol_RM_prostate.tsv'
             )
             if not sessions_xnat_path.joinpath("scans").exists(): continue
             for scans_path in sessions_xnat_path.joinpath("scans").iterdir():
@@ -188,9 +189,10 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part):
         procedure_class_light.copy_sessions(subject_name)
 
 
-participants_header = ['participant', 'modalities', 'body_parts', 'patient_birthday', 'age', 'gender']
-participants_keys = ['Modality', 'BodyPartExamined', 'PatientBirthDate', 'PatientSex', 'AcquisitionDateTime']
-session_header = ['session', 'acquisition_date_Time',]
+participants_header = ['participant_id', 'participant_pseudo_id', 'modalities', 'body_parts', 'patient_birthday', 'age', 'gender']
+participants_keys = ['PatientID','Modality', 'BodyPartExamined', 'PatientBirthDate', 'PatientSex', 'AcquisitionDateTime']
+session_header = ['session_id','session_pseudo_id', 'acquisition_date_Time',]
+sessions_keys = ['AccessionNumber', 'AcquisitionDateTime']
 def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
     """
         This function allows the user to create a table in format ".tsv"
@@ -201,6 +203,7 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
     for subject_path in mids_data_path.glob('*/'):
         if not subject_path.match("sub-*"): continue
         subject = subject_path.parts[-1]
+        list_sessions_information = []
         for session_path in subject_path.glob('*/'):
             if not session_path.match("ses-*"): continue
             session = session_path.parts[-1]
@@ -213,23 +216,52 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
             for json_pathfile in subject_path.glob('**/*.json'):
                 json_file = load_json(json_pathfile)
                 print(json_file)
-                modalities.append(json_file[participants_keys[0]])
+                pseudo_id = json_file[participants_keys[0]]
+                modalities.append(json_file[participants_keys[1]])
                 try:
-                    body_parts.append(json_file[participants_keys[1]].lower())
+                    body_parts.append(json_file[participants_keys[2]].lower())
                 except KeyError as e:
                     body_parts.append(body_part_aux.lower())
-                patient_birthday = datetime.fromisoformat(json_file[participants_keys[2]])
-                patient_sex = json_file[participants_keys[3]]
-                adquisition_date_time = datetime.fromisoformat(json_file[participants_keys[4]].split('T')[0])
+                patient_birthday = datetime.fromisoformat(json_file[participants_keys[3]])
+                patient_sex = json_file[participants_keys[4]]
+                acquisition_date_time_check = aquisition_date_pattern_comp.search(json_file[participants_keys[5]])
+                try:
+                    time_values = list(int (x) for x in acquisition_date_time_check.groups())
+                except AttributeError as e:
+                        continue
+                acquisition_date_time_correct = f"\
+{time_values[0]:04d}-\
+{time_values[1]:02d}-\
+{time_values[2]:02d}T\
+{time_values[3]:02d}:\
+{time_values[4]:02d}:\
+{time_values[5]:02d}.\
+{time_values[6]:06d}\
+"
+                adquisition_date_time = datetime.fromisoformat(acquisition_date_time_correct)
+                # adquisition_date_time = datetime.fromisoformat(json_file[participants_keys[5]].split('T')[0])
                 patient_ages.append(int((adquisition_date_time - patient_birthday).days / (365.25)))
+
+                
             patient_ages = sorted(list(set(patient_ages)))
             modalities = sorted(list(set(modalities)))
             body_parts = sorted(list(set(body_parts)))
+            list_sessions_information.append({
+                 key:value
+                 for key, value in zip(
+                    session_header,
+                    [session, json_file['AccessionNumber'], str(adquisition_date_time)]
+                 )
+
+            })
+            pandas.DataFrame.from_dict(list_sessions_information).to_csv(
+                subject_path.joinpath(f"{subject}_sessions.tsv"), sep="\t", index=False
+            )
         list_information.append({
             key:value
             for key, value in zip(
                 participants_header,
-                [subject, modalities, body_parts, str(patient_birthday.date()), patient_ages, patient_sex]
+                [subject, pseudo_id, modalities, body_parts, str(patient_birthday.date()), patient_ages, patient_sex]
             )
         })
     print(list_information)
