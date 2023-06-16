@@ -135,14 +135,16 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part):
                         folder_conversion = dicom2niix(path_dicoms, options_dcm2niix) #.joinpath("resources")
                     else:
                         path_dicoms= list(scans_path.joinpath("resources").rglob("*.dcm"))[0].parent
-                        folder_conversion = dicom2png(path_dicoms, options_dcm2niix) #.joinpath("resources")
-                    
+                        try:
+                            folder_conversion = dicom2png(path_dicoms, options_dcm2niix) #.joinpath("resources")
+                        except RuntimeError as e:
+                            continue
                     print("---------", len(list(folder_conversion.iterdir())))
                     if len(list(folder_conversion.iterdir())) == 0: continue
                     #continue
                     dict_json = load_json(folder_conversion.joinpath(list(folder_conversion.glob("*.json"))[0]))
 
-
+                    continue
                     modality = dict_json.get("Modality", "n/a")
                     study_description = dict_json.get("SeriesDescription", "n/a")
                     Protocol_name = dict_json.get("ProtocolName", "n/a")
