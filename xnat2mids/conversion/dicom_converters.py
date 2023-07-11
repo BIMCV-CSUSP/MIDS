@@ -2,10 +2,9 @@ import subprocess
 import SimpleITK as sitk
 import pydicom
 import json
-import os
 import pydicom
-import nibabel as nib
-from nibabel.nicom.dicomreaders import read_mosaic_dir
+import shutil
+
 # def sitk_dicom2mifti(dicom_path):
 #     reader = sitk.ImageSeriesReader()
 #     dicom_names = reader.GetGDCMSeriesFileNames(dicom_path.parent)
@@ -33,9 +32,9 @@ from nibabel.nicom.dicomreaders import read_mosaic_dir
 def dicom2niix(folder_json, str_options):
     folder_nifti = folder_json.parent.parent.joinpath("LOCAL_NIFTI", "files")
     folder_nifti.mkdir(parents=True, exist_ok=True)
-    print(f"dcm2niix {str_options} -g y -b y -o {folder_nifti} {folder_json}")
+    print(f"dcm2niix {str_options} -o {folder_nifti} {folder_json}")
     subprocess.call(
-        f"dcm2niix {str_options} -g y -b y -o {folder_nifti} {folder_json}",
+        f"dcm2niix {str_options} -o {folder_nifti} {folder_json}",
         shell=True,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.STDOUT
@@ -49,15 +48,22 @@ def dicom2niix(folder_json, str_options):
 
 
 def dicom2png(folder_json, str_options):
-    
+    # shutil.move(
+    #         str(folder_json.parent.parent.joinpath("LOCAL_NIFTI")),
+    #         str(folder_json.parent.parent.joinpath("LOCAL_PNG"))
+    # )
+    if folder_json.parent.parent.joinpath("LOCAL_NIFTI").exists():
+        shutil.rmtree(folder_json.parent.parent.joinpath("LOCAL_NIFTI"))
     dcm_files = list(folder_json.rglob("*dcm"))
     for dcm_file in dcm_files:
-        folder_png = folder_json.parent.parent.joinpath("LOCAL_PNG", "files", dcm_file.stem+".png")
+        
+        
+        folder_png = folder_json.parent.parent.joinpath("LOCAL_PNG","files", dcm_file.stem+".png")
         folder_png.parent.mkdir(parents=True, exist_ok=True)
         sitk_img = sitk.ReadImage(dcm_file)
         sitk.WriteImage(sitk_img, folder_png)
     subprocess.call(
-        f"dcm2niix {str_options} -g y -b o -o {folder_png.parent} {dcm_files[0].parent}",
+        f"dcm2niix {str_options} -b o -o {folder_png.parent} {dcm_files[0].parent}",
         shell=True,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.STDOUT

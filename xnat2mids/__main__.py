@@ -90,8 +90,13 @@ def main():
     parser.add_argument('-i ', '--input', type=str,
                         help="""the directory where the files will
                             be downloaded.""")
-    # parser.add_argument('-o ', '--output', type=str,
-    #                     help='Directory where the MIDS model is applied.')
+    parser.add_argument('-d ', '--debug-level', type=int, default=0,
+                        help="""for execute partialy some functions:
+                        \t + 0: no debug
+                        \t + 1: only xnat download
+                        \t + 2: xnat download + conversion to nifti
+                        \t + 3: xnat download + conversion to nifti + classify check
+                        """)
     # parser.add_argument('-p ', '--projects', nargs='*', default=None, type=str,
     #                     help="""The project name to download, if the project is
     #                         omitted,the aplication show all projects in xnat
@@ -120,12 +125,13 @@ def main():
     user = args.user
     xnat_data_path = Path(args.input)
     mids_data_path = Path(args.input)
+    debug_level = args.debug_level
     #project_list = args.projects
     verbose = args.verbose
     body_part = args.body_part
     #types = args.types[0]
     overwrite = args.overwrite
-
+    print(debug_level)
     # Comprobation if Xnat dowload can be execute
     if xnat_data_path and page:
         xnat_data_path.mkdir(exist_ok=True)
@@ -138,43 +144,44 @@ def main():
                 verbose=verbose
             )
     # conditions to move xnat project to MIDS project
-    if xnat_data_path and mids_data_path:
+    if debug_level == 1: return
         # if project_list is None, the projects in the folder xnat must be
         # chosen
     
-        project_paths = [dirs for dirs in xnat_data_path.iterdir()]
-        project_names = [path_.name for path_ in project_paths]
-        project_list = list_directory_xnat(project_names)
-        mids_data_path.mkdir(exist_ok=True)
-        # for each project choice
-        for xnat_project in project_list:
-            xnat_data_path = xnat_data_path.joinpath(xnat_project,"sourcedata")
-            if not xnat_data_path.exists(): 
-               raise FileNotFoundError(f'No folder exists at the location specified in {xnat_data_path}') 
-            mids_data_path = mids_data_path.joinpath(xnat_project)
-            print(f"{xnat_data_path}")
-            print(f"{mids_data_path}")
+    project_paths = [dirs for dirs in xnat_data_path.iterdir()]
+    project_names = [path_.name for path_ in project_paths]
+    project_list = list_directory_xnat(project_names)
+    mids_data_path.mkdir(exist_ok=True)
+    # for each project choice
+    for xnat_project in project_list:
+        xnat_data_path = xnat_data_path.joinpath(xnat_project,"sourcedata")
+        if not xnat_data_path.exists(): 
+            raise FileNotFoundError(f'No folder exists at the location specified in {xnat_data_path}') 
+        mids_data_path = mids_data_path.joinpath(xnat_project)
+        print(f"{xnat_data_path}")
+        print(f"{mids_data_path}")
 
-            print("MIDS are generating...")
-            create_directory_mids_v1(
-                xnat_data_path,
-                mids_data_path,
-                body_part
-            )
+        print("MIDS are generating...")
+        create_directory_mids_v1(
+            xnat_data_path,
+            mids_data_path,
+            body_part,
+            debug_level
+        )
 
-            print("participats tsv are generating...")
-            create_tsvs(xnat_data_path, mids_data_path, body_part)
+        print("participats tsv are generating...")
+        create_tsvs(xnat_data_path, mids_data_path, body_part)
 
-            # print("scan tsv are generating...")
-            # MIDS_funtions.create_scans_tsv(
-            #     os.path.join(mids_data_path, xnat_project)
-            # )
-            #
-            # print("sessions tsv are generating...")
-            # MIDS_funtions.create_sessions_tsv(
-            #     os.path.join(xnat_data_path, xnat_project),
-            #     mids_data_path
-            # )
+        # print("scan tsv are generating...")
+        # MIDS_funtions.create_scans_tsv(
+        #     os.path.join(mids_data_path, xnat_project)
+        # )
+        #
+        # print("sessions tsv are generating...")
+        # MIDS_funtions.create_sessions_tsv(
+        #     os.path.join(xnat_data_path, xnat_project),
+        #     mids_data_path
+        # )
 
 if __name__ == "__main__":
     main()

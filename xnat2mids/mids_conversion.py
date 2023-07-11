@@ -91,9 +91,9 @@ LUMBAR_PROTOCOLS_ACEPTED = {
     't1_tse_tra': 518,
 }
 
-options_dcm2niix = "-w 0 -i n -m y -ba n -f %x_%s -z y"
+options_dcm2niix = "-w 0 -i n -m y -ba n -f %x_%s -z y -g y"
 
-def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part):
+def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part, debug_level):
     print(xnat_data_path)
     print(mids_data_path)
     procedure_class_mr = ProceduresMR()
@@ -125,38 +125,46 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part):
             for scans_path in sessions_xnat_path.joinpath("scans").iterdir():
                 #if "LOCAL_" not in str(scans_path):
                     
-                    num_jsons = len(list(scans_path.joinpath("resources").rglob("*.dcm"))) #
+                    # num_jsons = len(list(scans_path.joinpath("resources").rglob("*.dcm"))) #
+                    path_dicoms= list(scans_path.joinpath("resources").rglob("*.dcm"))[0].parent
+                    print("2"*79)
+                    print(path_dicoms)
+                    print("2"*79)
+                    folder_conversion = dicom2niix(path_dicoms, options_dcm2niix+ " -b o")
                     
-                    
-                    if num_jsons ==0:
-                        continue
-                    if num_jsons>6:
-                        path_dicoms= list(scans_path.joinpath("resources").rglob("*.dcm"))[0].parent
-                        folder_conversion = dicom2niix(path_dicoms, options_dcm2niix) #.joinpath("resources")
-                    else:
-                        path_dicoms= list(scans_path.joinpath("resources").rglob("*.dcm"))[0].parent
-                        try:
-                            folder_conversion = dicom2png(path_dicoms, options_dcm2niix) #.joinpath("resources")
-                        except RuntimeError as e:
-                            continue
+                    # if num_jsons ==0:
+                    #     continue
+                    # if num_jsons>6:
+                    #     path_dicoms= list(scans_path.joinpath("resources").rglob("*.dcm"))[0].parent
+                    #     folder_conversion = dicom2niix(path_dicoms, options_dcm2niix) #.joinpath("resources")
+                    # else:
+                    #     path_dicoms= list(scans_path.joinpath("resources").rglob("*.dcm"))[0].parent
+                    #     try:
+                    #         folder_conversion = dicom2png(path_dicoms, options_dcm2niix) #.joinpath("resources")
+                    #     except RuntimeError as e:
+                    #         continue
                     print("---------", len(list(folder_conversion.iterdir())))
                     if len(list(folder_conversion.iterdir())) == 0: continue
                     #continue
                     dict_json = load_json(folder_conversion.joinpath(list(folder_conversion.glob("*.json"))[0]))
 
-                    continue
+                    if debug_level == 2: continue
+
                     modality = dict_json.get("Modality", "n/a")
                     study_description = dict_json.get("SeriesDescription", "n/a")
                     Protocol_name = dict_json.get("ProtocolName", "n/a")
                     image_type = dict_json.get("ImageType", "n/a")
-                    acquisition_date_time = dict_json.get("AcquisitionDateTime", "")
+                    acquisition_date_time = dict_json.get("AcquisitionDateTime", "n/a")
                     body_part = dict_json.get("BodyPartExamined", body_part)
-                    acquisition_date_time_check = aquisition_date_pattern_comp.search(acquisition_date_time)
-                    try:
-                        time_values = list(int (x) for x in acquisition_date_time_check.groups())
-                    except AttributeError as e:
-                         continue
-                    acquisition_date_time_correct = f"\
+                    if acquisition_date_time == "n/a":
+                        acquisition_date_time_correct = "n/a"
+                    else:
+                        acquisition_date_time_check = aquisition_date_pattern_comp.search(acquisition_date_time)
+                        try:
+                            time_values = list(int (x) for x in acquisition_date_time_check.groups())
+                        except AttributeError as e:
+                            continue
+                        acquisition_date_time_correct = f"\
 {time_values[0]:04d}-\
 {time_values[1]:02d}-\
 {time_values[2]:02d}T\
@@ -170,6 +178,8 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part):
                     print(f"{study_description}")
                     print(f"{Protocol_name}")
                     if modality == "MR":
+                        #convert data to nifti
+                        folder_conversion = dicom2niix(path_dicoms, options_dcm2niix+ " -b y")
                         # via BIDS protocols
                         searched_prost = prostate_pattern_comp.search(study_description)
                         if searched_prost and "tracew" not in study_description.lower():
@@ -186,12 +196,23 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part):
                                 folder_conversion, mids_session_path, session_name, protocol, acq, dir_, folder_BIDS, body_part
                             )
                     
-                    if modality in ["OP", "SC", "XC", "OT"]:
+                    if modality in ["OP", "SC", "XC", "OT", "SM"]:
+                        
+                        try:
+                            folder_conversion = dicom2png(path_dicoms, options_dcm2niix) #.joinpath("resources")
+                        except RuntimeError as e:
+                            continue
+                        modality_ = ("op" if modality in ["OP", "SC", "XC", "OT"] else "BF")
+                        mim = ("mim-ligth" if modality in ["OP", "SC", "XC", "OT"] else "micr")
                         laterality = dict_json.get("Laterality")
                         acq = "" if "ORIGINAL" in image_type else "opacitysubstract"
                         # print(laterality, acq)
-                        procedure_class_light.control_image(folder_conversion, mids_session_path.joinpath("mim-light"), session_name, "op", acq, laterality, acquisition_date_time_correct)
-        
+                        print("!"*79)
+                        print(modality,  mids_session_path.joinpath(mim))
+                        print("!"*79)
+                        procedure_class_light.control_image(folder_conversion, mids_session_path.joinpath(mim), dict_json, session_name, modality_, acq, laterality, acquisition_date_time_correct)
+                    
+        if debug_level == 3: continue
         procedure_class_mr.copy_sessions(subject_name)
         procedure_class_light.copy_sessions(subject_name)
 
@@ -231,8 +252,14 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
                     body_parts.append(json_file[participants_keys[2]].lower())
                 except KeyError as e:
                     body_parts.append(body_part_aux.lower())
-                patient_birthday = datetime.fromisoformat(json_file[participants_keys[3]])
-                patient_sex = json_file[participants_keys[4]]
+                try:    
+                    patient_birthday = datetime.fromisoformat(json_file[participants_keys[3]])
+                except KeyError as e:
+                    patient_birthday = "n/a"
+                try:
+                    patient_sex = json_file[participants_keys[4]]
+                except KeyError as e:
+                    patient_sex = "n/a"
                 acquisition_date_time_check = aquisition_date_pattern_comp.search(json_file[participants_keys[5]])
                 try:
                     time_values = list(int (x) for x in acquisition_date_time_check.groups())
@@ -249,17 +276,22 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
 "
                 adquisition_date_time = datetime.fromisoformat(acquisition_date_time_correct)
                 # adquisition_date_time = datetime.fromisoformat(json_file[participants_keys[5]].split('T')[0])
-                patient_ages.append(int((adquisition_date_time - patient_birthday).days / (365.25)))
+                if patient_birthday != "n/a":
+                    patient_ages.append(int((adquisition_date_time - patient_birthday).days / (365.25)))
 
                 
             patient_ages = sorted(list(set(patient_ages)))
             modalities = sorted(list(set(modalities)))
             body_parts = sorted(list(set(body_parts)))
+            try:
+                accesion_number =  json_file['AccessionNumber']
+            except KeyError:
+                accesion_number = "n/a"
             list_sessions_information.append({
                  key:value
                  for key, value in zip(
                     session_header,
-                    [session, json_file['AccessionNumber'], str(adquisition_date_time)]
+                    [session, accesion_number, str(adquisition_date_time)]
                  )
 
             })
@@ -270,7 +302,7 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
             key:value
             for key, value in zip(
                 participants_header,
-                [subject, pseudo_id, modalities, body_parts, str(patient_birthday.date()), patient_ages, patient_sex]
+                [subject, pseudo_id, modalities, body_parts, (str(patient_birthday.date()) if patient_birthday != "n/a" else patient_birthday), patient_ages, patient_sex]
             )
         })
     print(list_information)

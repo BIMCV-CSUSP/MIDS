@@ -56,7 +56,7 @@ class ScanResources(dict):
         )
         
 
-        dicom_path = os.path.join(complet_path, filename)
+        dicom_path = complet_path.joinpath(filename).with_suffix(".dcm")
         dicom_path_metadata = os.path.join(complet_path, "dicom.json")
         if not overwrite and (os.path.exists(dicom_path)) and (os.path.exists(dicom_path_metadata)):
             #    #if verbose: print("DICOM file already exist")
@@ -82,7 +82,6 @@ class ScanResources(dict):
         )
         # nifti = self["scan"]["session"]["subject"]["project"].interface.get(url_nifti, allow_redirects=True)
         dicom.raise_for_status()
-
         with open(dicom_path, 'wb') as dicom_file:
             dicom_file.write(dicom.content)
 

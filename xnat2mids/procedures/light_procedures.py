@@ -11,17 +11,17 @@ class LightProcedure(Procedures):
     def reset_indexes(self):
         self.run_dict = {}
 
-    def control_image(self, folder_conversion, mids_session_path, session_name, protocol, rec, laterality, acquisition_date_time):
+    def control_image(self, folder_conversion, mids_session_path, dict_json, session_name, protocol, rec, laterality, acquisition_date_time):
         png_files = sorted([i for i in folder_conversion.glob("*.png")])
-        nifti_files = sorted([i for i in folder_conversion.glob("*.nii*")])
-
-        len_files = len(png_files) + len(nifti_files)
+        #nifti_files = sorted([i for i in folder_conversion.glob("*.nii*")])
+        
+        len_files = len(png_files)
         if not len_files: return
 
         key = json.dumps([session_name, rec, laterality, protocol])
         value = self.run_dict.get(key, [])
         value.append({
-            "run":[*png_files, *nifti_files], 
+            "run":png_files, 
             "adquisition_time":datetime.fromisoformat(acquisition_date_time), 
             "folder_mids": mids_session_path})
         self.run_dict[key]=value
@@ -47,6 +47,9 @@ class LightProcedure(Procedures):
                         activate_run=activate_run, 
                         activate_acq_partioned=activate_acq_partioned
                     )
+                    print("-"*79)
+                    print(row["folder_mids"])
+                    print("-"*79)
                     print("origen:", file_)
                     print("destino:", row["folder_mids"].joinpath(str(dest_file_name) + "".join(file_.suffix)))
                     
@@ -60,7 +63,9 @@ class LightProcedure(Procedures):
 
     def calculate_name(self, subject_name, key, num_run, num_part, activate_run, activate_acq_partioned):
         key_list = json.loads(key)
+        print(key_list)
         # print(num_part, activate_acq_partioned)
+        
         rec = f"{key_list[1] if key_list[1] else ''}"
         chunk = f"{num_part+1 if activate_acq_partioned else ''}"
         run = f"{num_run if activate_run else ''}"
@@ -70,7 +75,7 @@ class LightProcedure(Procedures):
             part for part in [
                 subject_name,
                 key_list[0],
-                f"acq-{key_list[2]}",
+                f"acq-{key_list[2]}" if key_list[2] else "",
                 f"rec-{rec}",
                 f'run-{run}',
                 (f'chunk-{chunk}') if activate_acq_partioned else '',

@@ -64,11 +64,11 @@ class SessionResource(dict):
 
 
     def download_resource_file(self, path_download, filename, overwrite=False, verbose=False):
-        complet_path = (path_download + dict_paths["path_resources"](
+        complet_path = (path_download.joinpath(dict_paths["path_resources"](
             self["session"]["subject"]["ID"],
             self["session"]["ID"],
             self["label"]
-        )
+        ))
                         )
 
         resource_path = os.path.join(complet_path, filename)
