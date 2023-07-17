@@ -219,9 +219,15 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part, debug_le
 
 participants_header = ['participant_id', 'participant_pseudo_id', 'modalities', 'body_parts', 'patient_birthday', 'age', 'gender']
 participants_keys = ['PatientID','Modality', 'BodyPartExamined', 'PatientBirthDate', 'PatientSex', 'AcquisitionDateTime']
-session_header = ['session_id','session_pseudo_id', 'acquisition_date_Time',]
+session_header = ['session_id','session_pseudo_id', 'acquisition_date_Time','radiology_report']
 sessions_keys = ['AccessionNumber', 'AcquisitionDateTime']
-
+scans_header = [
+    'scan_file','BodyPart'
+    'Manufacturer','ManufacturersModelName','DeviceSerialNumber',
+    'MagneticFieldStrength','ReceiveCoilName','PulseSequenceType',
+    'ScanningSequence','SequenceVariant','ScanOptions','SequenceName','PulseSequenceDetails','MRAcquisitionType',
+    'EchoTime','InversionTime','SliceTiming','SliceEncodingDirection','DwellTime','FlipAngle',
+]
 
 def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
     """
@@ -233,16 +239,33 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
     for subject_path in mids_data_path.glob('*/'):
         if not subject_path.match("sub-*"): continue
         subject = subject_path.parts[-1]
+        old_subject = "_".join([
+                subject.split["-"][-1].split("S")[0],
+                "S"+session.split["-"][-1].split("S")[1]
+            ])
         list_sessions_information = []
         for session_path in subject_path.glob('*/'):
             if not session_path.match("ses-*"): continue
             session = session_path.parts[-1]
+            old_sesion = "_".join([
+                session.split["-"][-1].split("E")[0],
+                "E"+session.split["-"][-1].split("E")[1]
+            ])
+            
             modalities = []
             body_parts = []
             patient_birthday = None
             patient_ages = list([])
             patient_sex = None
             adquisition_date_time = None
+            report_path = xnat_data_path.glob(f'*{old_subject}/*{old_sesion}/**/*.txt')
+            if not report_path:
+                report="n/a"
+            else:
+                with report_path.open("r") as file_:
+                    report = file_.read()
+                report = report.replace("\t", "    ")
+
             for json_pathfile in subject_path.glob('**/*.json'):
                 json_file = load_json(json_pathfile)
                 print(json_file)
@@ -291,7 +314,7 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
                  key:value
                  for key, value in zip(
                     session_header,
-                    [session, accesion_number, str(adquisition_date_time)]
+                    [session, accesion_number, str(adquisition_date_time), report]
                  )
 
             })
