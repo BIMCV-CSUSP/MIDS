@@ -226,7 +226,7 @@ scans_header = [
     'Manufacturer','ManufacturersModelName','DeviceSerialNumber',
     'MagneticFieldStrength','ReceiveCoilName','PulseSequenceType',
     'ScanningSequence','SequenceVariant','ScanOptions','SequenceName','PulseSequenceDetails','MRAcquisitionType',
-    'EchoTime','InversionTime','SliceTiming','SliceEncodingDirection','DwellTime','FlipAngle',
+    'EchoTime','InversionTime','SliceTiming','SliceEncodingDirection','FlipAngle'
 ]
 
 def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
@@ -271,6 +271,7 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
                 print(json_file)
                 pseudo_id = json_file[participants_keys[0]]
                 modalities.append(json_file[participants_keys[1]])
+                
                 try:
                     body_parts.append(json_file[participants_keys[2]].lower())
                 except KeyError as e:
@@ -302,7 +303,11 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
                 if patient_birthday != "n/a":
                     patient_ages.append(int((adquisition_date_time - patient_birthday).days / (365.25)))
 
-                
+                if json_file[participants_keys[1]] == 'MR':
+                    procedure_class_mr.create_tsv()
+                if json_file[participants_keys[1]] in ["OP", "SC", "XC", "OT", "SM"]:
+                    procedure_class_light.create_tsv()
+
             patient_ages = sorted(list(set(patient_ages)))
             modalities = sorted(list(set(modalities)))
             body_parts = sorted(list(set(body_parts)))
