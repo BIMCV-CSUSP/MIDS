@@ -117,5 +117,3 @@ class ProceduresMR:
                 keys[5]
             ] if part != ''
         ])
-
-def create_row_tsv(path_to_create, ):

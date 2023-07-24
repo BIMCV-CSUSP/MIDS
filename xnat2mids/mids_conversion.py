@@ -222,7 +222,7 @@ participants_keys = ['PatientID','Modality', 'BodyPartExamined', 'PatientBirthDa
 session_header = ['session_id','session_pseudo_id', 'acquisition_date_Time','radiology_report']
 sessions_keys = ['AccessionNumber', 'AcquisitionDateTime']
 scans_header = [
-    'scan_file','BodyPart'
+    'scan_file','BodyPart',
     'Manufacturer','ManufacturersModelName','DeviceSerialNumber',
     'MagneticFieldStrength','ReceiveCoilName','PulseSequenceType',
     'ScanningSequence','SequenceVariant','ScanOptions','SequenceName','PulseSequenceDetails','MRAcquisitionType',
@@ -239,17 +239,18 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
     for subject_path in mids_data_path.glob('*/'):
         if not subject_path.match("sub-*"): continue
         subject = subject_path.parts[-1]
+        
         old_subject = "_".join([
-                subject.split["-"][-1].split("S")[0],
-                "S"+session.split["-"][-1].split("S")[1]
+                subject.split("-")[-1].split("S")[0],
+                "S"+subject.split("-")[-1].split("S")[1]
             ])
         list_sessions_information = []
         for session_path in subject_path.glob('*/'):
             if not session_path.match("ses-*"): continue
             session = session_path.parts[-1]
             old_sesion = "_".join([
-                session.split["-"][-1].split("E")[0],
-                "E"+session.split["-"][-1].split("E")[1]
+                session.split("-")[-1].split("E")[0],
+                "E"+session.split("-")[-1].split("E")[1]
             ])
             
             modalities = []
@@ -258,17 +259,18 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
             patient_ages = list([])
             patient_sex = None
             adquisition_date_time = None
-            report_path = xnat_data_path.glob(f'*{old_subject}/*{old_sesion}/**/*.txt')
+            report_path = list(xnat_data_path.glob(f'*{old_subject}/*{old_sesion}/**/*.txt'))
+            
             if not report_path:
                 report="n/a"
             else:
-                with report_path.open("r") as file_:
+                with report_path[0].open("r", encoding="iso-8859-1") as file_:
                     report = file_.read()
                 report = report.replace("\t", "    ")
-
+            list_scan_information = []
             for json_pathfile in subject_path.glob('**/*.json'):
                 json_file = load_json(json_pathfile)
-                print(json_file)
+                #print(json_file)
                 pseudo_id = json_file[participants_keys[0]]
                 modalities.append(json_file[participants_keys[1]])
                 
@@ -304,9 +306,16 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
                     patient_ages.append(int((adquisition_date_time - patient_birthday).days / (365.25)))
 
                 if json_file[participants_keys[1]] == 'MR':
-                    procedure_class_mr.create_tsv()
-                if json_file[participants_keys[1]] in ["OP", "SC", "XC", "OT", "SM"]:
-                    procedure_class_light.create_tsv()
+                    list_scan_information.append({
+                 key:value
+                 for key, value in zip(
+                    scans_header,
+                    [json_pathfile, body_parts[-1], *[json_file.get(key, "n/a") for key in scans_header[2:]]]
+                 )
+
+            })
+                # if json_file[participants_keys[1]] in ["OP", "SC", "XC", "OT", "SM"]:
+                #     procedure_class_light.create_row_tsv()
 
             patient_ages = sorted(list(set(patient_ages)))
             modalities = sorted(list(set(modalities)))
@@ -323,9 +332,12 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
                  )
 
             })
-            pandas.DataFrame.from_dict(list_sessions_information).to_csv(
-                subject_path.joinpath(f"{subject}_sessions.tsv"), sep="\t", index=False
+            pandas.DataFrame.from_dict(list_scan_information).to_csv(
+                session_path.joinpath(f"{subject}_{session}_scans.tsv"), sep="\t", index=False
             )
+        pandas.DataFrame.from_dict(list_sessions_information).to_csv(
+            subject_path.joinpath(f"{subject}_sessions.tsv"), sep="\t", index=False
+        )
         list_information.append({
             key:value
             for key, value in zip(
