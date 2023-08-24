@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import json
 pd.set_option('display.max_columns', None)
-
+from pandas.errors import EmptyDataError
 class Tagger:
     # scan group
     #               SE = Spin Echo          =====>>>> 'SE'
@@ -45,6 +45,7 @@ class Tagger:
         print("#" * 40, "table_protocol_M", "#" * 40)
         print(table_protocol_M[["Protocol", "acq"]])
 
+        if table_protocol_M.empty: raise EmptyDataError 
 
         table_protocol_M_SS = table_protocol_M[[
             any([True for s in json.loads(l) if s == scaning_sequence])

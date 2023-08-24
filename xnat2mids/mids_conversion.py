@@ -13,11 +13,11 @@ from xnat2mids.protocols.scans_tagger import Tagger
 from xnat2mids.conversion.dicom_converters import dicom2niix
 from xnat2mids.conversion.dicom_converters import dicom2png
 from tqdm import tqdm
-
+from pandas.errors import EmptyDataError
 
 adquisition_date_pattern = r"(?P<year>\d+)-(?P<month>\d+)-(?P<day>\d+)T(?P<hour>\d+):(?P<minutes>\d+):(?P<seconds>\d+).(?P<ms>\d+)"
 subses_pattern = r"[A-z]+(?P<prefix_sub>\d*)?(_S)(?P<suffix_sub>\d+)/[A-z]+\-?[A-z]*(?P<prefix_ses>\d*)?(_E)(?P<suffix_ses>\d+)"
-prostate_pattern = r"(?:(?:(?:diff?|dwi)(?:\W|_)(?:.*)(?:b\d+))|dif 2000)|(?:adc|Apparent)|prop|blade|fse|tse"
+prostate_pattern = r"(?:(?:(?:diff?|dwi)(?:\W|_)(?:.*)(?:b\d+))|dif 2000)|(?:adc|Apparent)|prop|blade|fse|tse|^ax T2$"
 
 aquisition_date_pattern_comp = re.compile(adquisition_date_pattern)
 prostate_pattern_comp = re.compile(prostate_pattern, re.I)
@@ -188,10 +188,11 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part, debug_le
                             json_adquisitions = {
                                 f'{k}': dict_json.get(k, -1) for k in dict_mr_keys.keys()
                             }
-                            
-                            protocol, acq, task, ce, rec, dir_, part, folder_BIDS = tagger.classification_by_min_max(json_adquisitions)
-                            print(protocol, acq, task, ce, rec, dir_, part, folder_BIDS)
-                            
+                            try:
+                                protocol, acq, task, ce, rec, dir_, part, folder_BIDS = tagger.classification_by_min_max(json_adquisitions)
+                                print(protocol, acq, task, ce, rec, dir_, part, folder_BIDS)
+                            except EmptyDataError as e:
+                                continue
                             procedure_class_mr.control_sequences(
                                 folder_conversion, mids_session_path, session_name, protocol, acq, dir_, folder_BIDS, body_part
                             )
