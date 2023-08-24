@@ -16,7 +16,7 @@ from tqdm import tqdm
 from pandas.errors import EmptyDataError
 
 adquisition_date_pattern = r"(?P<year>\d+)-(?P<month>\d+)-(?P<day>\d+)T(?P<hour>\d+):(?P<minutes>\d+):(?P<seconds>\d+).(?P<ms>\d+)"
-subses_pattern = r"[A-z]+(?P<prefix_sub>\d*)?(_S)(?P<suffix_sub>\d+)/[A-z]+\-?[A-z]*(?P<prefix_ses>\d*)?(_E)(?P<suffix_ses>\d+)"
+subses_pattern = r"[A-z]+(?P<prefix_sub>\d*)?(_S)(?P<suffix_sub>\d+)(\\|/)[A-z]+\-?[A-z]*(?P<prefix_ses>\d*)?(_E)(?P<suffix_ses>\d+)"
 prostate_pattern = r"(?:(?:(?:diff?|dwi)(?:\W|_)(?:.*)(?:b\d+))|dif 2000)|(?:adc|Apparent)|prop|blade|fse|tse|^ax T2$"
 
 aquisition_date_pattern_comp = re.compile(adquisition_date_pattern)
@@ -107,7 +107,7 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part, debug_le
             if "_E" not in sessions_xnat_path.name: continue
             
 
-            
+            print(sessions_xnat_path)
             findings = re.search(subses_pattern, str(sessions_xnat_path), re.X)
             #print('subject,', findings.group('prefix_sub'), findings.group('suffix_sub'))
             #print('session,', findings.group('prefix_ses'), findings.group('suffix_ses'))

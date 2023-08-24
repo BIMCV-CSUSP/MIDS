@@ -4,7 +4,8 @@ import pydicom
 import json
 import pydicom
 import shutil
-
+import platform
+sistema = platform.system()
 # def sitk_dicom2mifti(dicom_path):
 #     reader = sitk.ImageSeriesReader()
 #     dicom_names = reader.GetGDCMSeriesFileNames(dicom_path.parent)
@@ -33,12 +34,21 @@ def dicom2niix(folder_json, str_options):
     folder_nifti = folder_json.parent.parent.joinpath("LOCAL_NIFTI", "files")
     folder_nifti.mkdir(parents=True, exist_ok=True)
     print(f"dcm2niix {str_options} -o {folder_nifti} {folder_json}")
-    subprocess.call(
-        f"dcm2niix {str_options} -o {folder_nifti} {folder_json}",
-        shell=True,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.STDOUT
-    )
+    if sistema == "Linux":
+        subprocess.call(
+            f"dcm2niix {str_options} -o {folder_nifti} {folder_json}",
+            shell=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.STDOUT
+        )
+    else:
+        print(f"dcm2niix.exe {str_options} -o {folder_nifti} {folder_json}")
+        subprocess.call(
+            f"dcm2niix.exe {str_options} -o {folder_nifti} {folder_json}",
+            shell=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.STDOUT
+        )
     if len(list(folder_nifti.iterdir())) == 0:
         # folder_nifti.parent.unlink(missing_ok=True)
         return folder_nifti
@@ -62,8 +72,16 @@ def dicom2png(folder_json, str_options):
         folder_png.parent.mkdir(parents=True, exist_ok=True)
         sitk_img = sitk.ReadImage(dcm_file)
         sitk.WriteImage(sitk_img, folder_png)
-    subprocess.call(
-        f"dcm2niix {str_options} -b o -o {folder_png.parent} {dcm_files[0].parent}",
+    if sistema == "Linux":
+        subprocess.call(
+            f"dcm2niix {str_options} -b o -o {folder_png.parent} {dcm_files[0].parent}",
+            shell=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.STDOUT
+        )
+    else:
+        subprocess.call(
+        f"dcm2niix.exe {str_options} -b o -o {folder_png.parent} {dcm_files[0].parent}",
         shell=True,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.STDOUT
@@ -90,4 +108,3 @@ def add_dicom_metadata(
                              sort_keys=True)
     with json_filepath.open('w') as dicom_file:
         dicom_file.write(string_json)
-
