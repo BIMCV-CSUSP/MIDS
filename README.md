@@ -89,6 +89,11 @@ An example of execution is:
 ```sh
 python3 -m xnat2mids -i DIR_TO_SAVE -w XNAT_WEB -u USER -b BODYPART -v
 ```
+### Software required 
+
+To run this software it is necessary to use **dcm2niix** for conversion and metadata extraction, this is achieved by downloading the compiled software for the operating system you are using from [github releases](https://github.com/rordenlab/dcm2niix/releases). 
+
+For proper use, the compiled file should be left in the root folder of this project. On Linux systems it is also possible to install this software on the system without downloading the compiled file.
 
 ### Options
 
