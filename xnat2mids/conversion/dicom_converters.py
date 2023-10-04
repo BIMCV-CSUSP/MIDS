@@ -5,6 +5,7 @@ import json
 import pydicom
 import shutil
 import platform
+import dicom2nifti
 sistema = platform.system()
 # def sitk_dicom2mifti(dicom_path):
 #     reader = sitk.ImageSeriesReader()
@@ -29,6 +30,10 @@ sistema = platform.system()
 #     #)
 #     return array_nifty
 
+def dicom2nifti(folder_json):
+    folder_nifti = folder_json.parent.parent.joinpath("LOCAL_NIFTI", "files", "nifti_image.nii.gz")
+    folder_nifti.mkdir(parents=True, exist_ok=True)
+    dicom2nifti.convert_directory(dicom_path, folder_nifti)
 
 def dicom2niix(folder_json, str_options):
     folder_nifti = folder_json.parent.parent.joinpath("LOCAL_NIFTI", "files")
@@ -108,3 +113,25 @@ def add_dicom_metadata(
                              sort_keys=True)
     with json_filepath.open('w') as dicom_file:
         dicom_file.write(string_json)
+
+def dict2bids(dict_):
+    dicom_dict = {}
+    if len(dict_)==1:
+        if list(dict_.items())[0][0].isdigit():
+            dicom_dict[pydicom.datadict.keyword_for_tag(dict_.items()[0])] = dict_.items()[1]
+            return dicom_dict
+        else:
+            return list(dict_.items())[0][1]
+    else:
+        for key, element in dict_.items():
+            
+            description = pydicom.datadict.keyword_for_tag(key)
+            print(element.get("Value", [""])[0], type(element.get("Value", [""])[0]),type(element.get("Value", [""])[0]) is not dict )
+            dicom_dict[description] = element.get("Value", [""])[0] if type(element.get("Value", [""])[0]) is not dict else dict2bids(element.get("Value", [""])[0])
+            
+    return dicom_dict
+
+def generate_json_dicom(folder_json):
+    json_file = json.load(list(folder_json.glob("dicom.json"))[0])
+    json.dump(dict2bids(json_file), folder_json.joinpath("bids.json"))
+    

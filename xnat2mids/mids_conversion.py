@@ -2,9 +2,8 @@ import re
 
 from collections import defaultdict
 from datetime import datetime
-
+from pathlib import Path
 import pandas
-
 from xnat2mids.conversion.io_json import load_json
 from xnat2mids.conversion.io_json import add_tags_dicom
 from xnat2mids.procedures.magnetic_resonance_procedures import ProceduresMR
@@ -18,9 +17,10 @@ from pandas.errors import EmptyDataError
 adquisition_date_pattern = r"(?P<year>\d+)-(?P<month>\d+)-(?P<day>\d+)T(?P<hour>\d+):(?P<minutes>\d+):(?P<seconds>\d+).(?P<ms>\d+)"
 subses_pattern = r"[A-z]+(?P<prefix_sub>\d*)?(_S)(?P<suffix_sub>\d+)(\\|/)[A-z]+\-?[A-z]*(?P<prefix_ses>\d*)?(_E)(?P<suffix_ses>\d+)"
 prostate_pattern = r"(?:(?:(?:diff?|dwi)(?:\W|_)(?:.*)(?:b\d+))|dif 2000)|(?:adc|Apparent)|prop|blade|fse|tse|^ax T2$"
-
+chunk_pattern = r"_chunk-(?P<chunk>\d)+"
 aquisition_date_pattern_comp = re.compile(adquisition_date_pattern)
 prostate_pattern_comp = re.compile(prostate_pattern, re.I)
+chunk_pattern_comp = re.compile(chunk_pattern)
 dict_keys = {
     'Modality': '00080060',
     'SeriesDescription': '0008103E',
@@ -249,6 +249,7 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
         for session_path in subject_path.glob('*/'):
             if not session_path.match("ses-*"): continue
             session = session_path.parts[-1]
+            
             old_sesion = "_".join([
                 session.split("-")[-1].split("E")[0],
                 "E"+session.split("-")[-1].split("E")[1]
@@ -270,8 +271,22 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
                 report = report.replace("\t", "    ")
             list_scan_information = []
             for json_pathfile in subject_path.glob('**/*.json'):
+                chunk_search = chunk_pattern_comp.search(json_pathfile.stem)
+                print()
+                if chunk_search:
+                    list_nifties = json_pathfile.parent.glob(
+                        chunk_pattern_comp.sub(
+                            "*", 
+                            json_pathfile.stem
+                        ) + "*"
+                    )
+                else:
+                    list_nifties = json_pathfile.parent.glob(
+                        json_pathfile.stem + "*"
+                    )
+                list_nifties = [f for f in list_nifties if "json" not in f.suffix]
+                print(list(list_nifties))
                 json_file = load_json(json_pathfile)
-                #print(json_file)
                 pseudo_id = json_file[participants_keys[0]]
                 modalities.append(json_file[participants_keys[1]])
                 
@@ -308,13 +323,19 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
 
                 if json_file[participants_keys[1]] == 'MR':
                     list_scan_information.append({
-                 key:value
-                 for key, value in zip(
-                    scans_header,
-                    [json_pathfile, body_parts[-1], *[json_file.get(key, "n/a") for key in scans_header[2:]]]
-                 )
+                        key:value
+                        for nifti in list_nifties for key, value in zip(
+                            scans_header,
+                            [
+                                str(Path(".").joinpath(*nifti.parts[-2:])),
+                                 body_parts[-1], 
+                                 *[json_file.get(key, "n/a") for key in scans_header[2:]]
+                            ]
+                        ) 
+                        
 
-            })
+                    })
+                #print(list_scan_information)
                 # if json_file[participants_keys[1]] in ["OP", "SC", "XC", "OT", "SM"]:
                 #     procedure_class_light.create_row_tsv()
 

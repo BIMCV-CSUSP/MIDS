@@ -63,6 +63,7 @@ class XnatSession:
         self.password = password
         self.level_verbose = 0
         self.level_tab = 0
+        self.project_list = []
 
     def __enter__(self):
         self.connect()
@@ -123,17 +124,17 @@ class XnatSession:
                           verbose=False):
         self.get_projects(verbose)
         
-        project_list = self.show_list_of_project(verbose)
+        self.project_list = self.show_list_of_project(verbose)
         # clear console
         print(reset_terminal, end="", flush=True)
         print(format_message(self.level_verbose, self.level_tab, "Projects:"), end="", flush=True)
         print(format_message(self.level_verbose + 3, self.level_tab, "Subject:"), end="", flush=True)
         # move the cursor
-        bar_project = progressbar.ProgressBar(maxval=len(project_list), prefix="\033[2;0H").start()
+        bar_project = progressbar.ProgressBar(maxval=len(self.project_list), prefix="\033[2;0H").start()
         bar_project.update(1)
         bar_project.update(0)
 
-        for iter, key in enumerate(project_list):
+        for iter, key in enumerate(self.project_list):
             self.dict_projects[key].download(
                 path_download,
                 with_department=with_department,
