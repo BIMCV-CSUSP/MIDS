@@ -34,6 +34,7 @@ def dicom2nifti(folder_json):
     folder_nifti = folder_json.parent.parent.joinpath("LOCAL_NIFTI", "files", "nifti_image.nii.gz")
     folder_nifti.mkdir(parents=True, exist_ok=True)
     dicom2nifti.convert_directory(dicom_path, folder_nifti)
+    shutil.copy2(str(folder_json.joinpath("bids.json"), str(folder_nifti.parent)))
 
 def dicom2niix(folder_json, str_options):
     folder_nifti = folder_json.parent.parent.joinpath("LOCAL_NIFTI", "files")
@@ -67,9 +68,9 @@ def dicom2png(folder_json, str_options):
     #         str(folder_json.parent.parent.joinpath("LOCAL_NIFTI")),
     #         str(folder_json.parent.parent.joinpath("LOCAL_PNG"))
     # )
-    if folder_json.parent.parent.joinpath("LOCAL_NIFTI").exists():
-        shutil.rmtree(folder_json.parent.parent.joinpath("LOCAL_NIFTI"))
-    dcm_files = list(folder_json.rglob("*dcm"))
+    # if folder_json.parent.parent.joinpath("LOCAL_NIFTI").exists():
+    #     shutil.rmtree(folder_json.parent.parent.joinpath("LOCAL_NIFTI"))
+    dcm_files = list(folder_json.rglob("*.dcm"))
     for dcm_file in dcm_files:
         
         
@@ -77,19 +78,20 @@ def dicom2png(folder_json, str_options):
         folder_png.parent.mkdir(parents=True, exist_ok=True)
         sitk_img = sitk.ReadImage(dcm_file)
         sitk.WriteImage(sitk_img, folder_png)
-    if sistema == "Linux":
-        subprocess.call(
-            f"dcm2niix {str_options} -b o -o {folder_png.parent} {dcm_files[0].parent}",
-            shell=True,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.STDOUT
-        )
-    else:
-        subprocess.call(
-        f"dcm2niix.exe {str_options} -b o -o {folder_png.parent} {dcm_files[0].parent}",
-        shell=True,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.STDOUT
+    shutil.copy2(str(folder_json.joinpath("bids.json"), str(folder_png.parent)))
+    # if sistema == "Linux":
+    #     subprocess.call(
+    #         f"dcm2niix {str_options} -b o -o {folder_png.parent} {dcm_files[0].parent}",
+    #         shell=True,
+    #         stdout=subprocess.DEVNULL,
+    #         stderr=subprocess.STDOUT
+    #     )
+    # else:
+    #     subprocess.call(
+    #     f"dcm2niix.exe {str_options} -b o -o {folder_png.parent} {dcm_files[0].parent}",
+    #     shell=True,
+    #     stdout=subprocess.DEVNULL,
+    #     stderr=subprocess.STDOUT
     )
     add_dicom_metadata(dcm_files[0].parent, folder_png.parent)
     return folder_png.parent
@@ -134,4 +136,3 @@ def dict2bids(dict_):
 def generate_json_dicom(folder_json):
     json_file = json.load(list(folder_json.glob("dicom.json"))[0])
     json.dump(dict2bids(json_file), folder_json.joinpath("bids.json"))
-    
