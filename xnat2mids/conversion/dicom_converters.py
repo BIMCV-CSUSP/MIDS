@@ -6,6 +6,7 @@ import pydicom
 import shutil
 import platform
 import dicom2nifti
+from xnat2mids.conversion.io_json import load_json, save_json
 sistema = platform.system()
 # def sitk_dicom2mifti(dicom_path):
 #     reader = sitk.ImageSeriesReader()
@@ -63,7 +64,7 @@ def dicom2niix(folder_json, str_options):
     return folder_nifti
 
 
-def dicom2png(folder_json, str_options):
+def dicom2png(folder_json):
     # shutil.move(
     #         str(folder_json.parent.parent.joinpath("LOCAL_NIFTI")),
     #         str(folder_json.parent.parent.joinpath("LOCAL_PNG"))
@@ -78,7 +79,7 @@ def dicom2png(folder_json, str_options):
         folder_png.parent.mkdir(parents=True, exist_ok=True)
         sitk_img = sitk.ReadImage(dcm_file)
         sitk.WriteImage(sitk_img, folder_png)
-    shutil.copy2(str(folder_json.joinpath("bids.json"), str(folder_png.parent)))
+    shutil.copy2(str(folder_json.joinpath("bids.json")), str(folder_png.parent))
     # if sistema == "Linux":
     #     subprocess.call(
     #         f"dcm2niix {str_options} -b o -o {folder_png.parent} {dcm_files[0].parent}",
@@ -92,8 +93,8 @@ def dicom2png(folder_json, str_options):
     #     shell=True,
     #     stdout=subprocess.DEVNULL,
     #     stderr=subprocess.STDOUT
-    )
-    add_dicom_metadata(dcm_files[0].parent, folder_png.parent)
+    # )
+    #add_dicom_metadata(dcm_files[0].parent, folder_png.parent)
     return folder_png.parent
 
 
@@ -119,20 +120,24 @@ def add_dicom_metadata(
 def dict2bids(dict_):
     dicom_dict = {}
     if len(dict_)==1:
-        if list(dict_.items())[0][0].isdigit():
-            dicom_dict[pydicom.datadict.keyword_for_tag(dict_.items()[0])] = dict_.items()[1]
+        dict_items = list(dict_.items())[0]
+        if dict_items[0].isdigit():
+            
+            dicom_dict[pydicom.datadict.keyword_for_tag(dict_items[0])] = dict_items[1].get("Value", [""])[0]
             return dicom_dict
         else:
-            return list(dict_.items())[0][1]
+            return dict_items[1]
     else:
         for key, element in dict_.items():
             
             description = pydicom.datadict.keyword_for_tag(key)
-            print(element.get("Value", [""])[0], type(element.get("Value", [""])[0]),type(element.get("Value", [""])[0]) is not dict )
+            #print(element.get("Value", [""])[0], type(element.get("Value", [""])[0]),type(element.get("Value", [""])[0]) is not dict )
             dicom_dict[description] = element.get("Value", [""])[0] if type(element.get("Value", [""])[0]) is not dict else dict2bids(element.get("Value", [""])[0])
             
     return dicom_dict
 
 def generate_json_dicom(folder_json):
-    json_file = json.load(list(folder_json.glob("dicom.json"))[0])
-    json.dump(dict2bids(json_file), folder_json.joinpath("bids.json"))
+    json_file = load_json(folder_json.joinpath("dicom.json"))
+    json_dict = dict2bids(json_file)
+    save_json(json_dict, folder_json.joinpath("bids.json"))
+    return json_dict

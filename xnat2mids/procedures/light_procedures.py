@@ -20,6 +20,7 @@ class LightProcedure(Procedures):
 
         key = json.dumps([session_name, rec, laterality, protocol])
         value = self.run_dict.get(key, [])
+        print(acquisition_date_time)
         value.append({
             "run":png_files, 
             "adquisition_time":datetime.fromisoformat(acquisition_date_time), 

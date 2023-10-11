@@ -5,15 +5,17 @@ from datetime import datetime
 from pathlib import Path
 import pandas
 from xnat2mids.conversion.io_json import load_json
-from xnat2mids.conversion.io_json import add_tags_dicom
+from xnat2mids.conversion.dicom_converters import generate_json_dicom
 from xnat2mids.procedures.magnetic_resonance_procedures import ProceduresMR
 from xnat2mids.procedures.light_procedures import LightProcedure
+from xnat2mids.procedures.general_radiology_procedure import RadiologyProcedure
 from xnat2mids.protocols.scans_tagger import Tagger
 from xnat2mids.conversion.dicom_converters import dicom2niix
 from xnat2mids.conversion.dicom_converters import dicom2png
 from tqdm import tqdm
 from pandas.errors import EmptyDataError
-
+##1003-2-4T02:23:43.3245
+##20231212020401.23452
 adquisition_date_pattern = r"(?P<year>\d+)-(?P<month>\d+)-(?P<day>\d+)T(?P<hour>\d+):(?P<minutes>\d+):(?P<seconds>\d+).(?P<ms>\d+)"
 subses_pattern = r"[A-z]+(?P<prefix_sub>\d*)?(_S)(?P<suffix_sub>\d+)(\\|/)[A-z]+\-?[A-z]*(?P<prefix_ses>\d*)?(_E)(?P<suffix_ses>\d+)"
 prostate_pattern = r"(?:(?:(?:diff?|dwi)(?:\W|_)(?:.*)(?:b\d+))|dif 2000)|(?:adc|Apparent)|prop|blade|fse|tse|^ax T2$"
@@ -98,6 +100,7 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part, debug_le
     print(mids_data_path)
     procedure_class_mr = ProceduresMR()
     procedure_class_light = LightProcedure()
+    procedure_class_radiology = RadiologyProcedure()
     for subject_xnat_path in tqdm(xnat_data_path.glob('*/')):
         if "_S" not in subject_xnat_path.name:continue
         # num_sessions = len(list(subject_xnat_path.glob('*/')))
@@ -130,7 +133,7 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part, debug_le
                     print("2"*79)
                     print(path_dicoms)
                     print("2"*79)
-                    folder_conversion = dicom2niix(path_dicoms, options_dcm2niix+ " -b o")
+                    # folder_conversion = dicom2niix(path_dicoms, options_dcm2niix+ " -b o")
                     
                     # if num_jsons ==0:
                     #     continue
@@ -143,28 +146,40 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part, debug_le
                     #         folder_conversion = dicom2png(path_dicoms, options_dcm2niix) #.joinpath("resources")
                     #     except RuntimeError as e:
                     #         continue
-                    print("---------", len(list(folder_conversion.iterdir())))
-                    if len(list(folder_conversion.iterdir())) == 0: continue
+                    # print("---------", len(list(folder_conversion.iterdir())))
+                    # if len(list(folder_conversion.iterdir())) == 0: continue
                     #continue
-                    dict_json = load_json(folder_conversion.joinpath(list(folder_conversion.glob("*.json"))[0]))
-
+                    #dict_json = load_json(folder_conversion.joinpath(list(folder_conversion.glob("*.json"))[0]))
+                    dict_json = generate_json_dicom(path_dicoms)
                     if debug_level == 2: continue
 
                     modality = dict_json.get("Modality", "n/a")
                     study_description = dict_json.get("SeriesDescription", "n/a")
                     Protocol_name = dict_json.get("ProtocolName", "n/a")
                     image_type = dict_json.get("ImageType", "n/a")
-                    acquisition_date_time = dict_json.get("AcquisitionDateTime", "n/a")
                     body_part = dict_json.get("BodyPartExamined", body_part)
-                    if acquisition_date_time == "n/a":
-                        acquisition_date_time_correct = "n/a"
+                    acquisition_date_time = dict_json.get("AcquisitionDateTime", "n/a")
+                    acquisition_date = dict_json.get("AcquisitionDate", "n/a")
+                    acquisition_time = dict_json.get("AcquisitionTime", "n/a")
+
+                    if (acquisition_date != "n/a") and acquisition_time != "n/a":
+                        print("variables separadas")
+                        date = str(acquisition_date)
+                        time = str(acquisition_time)
+                        acquisition_date_time_correct = f"{date[:4]}-{date[4:6]}-{date[6:8]}T{time[:2]}:{time[2:4]}:{time[4:6]}.000"
+                        #acquisition_date_time_correct = aquisition_date_pattern_comp.search(acquisition_date_time)
+                        #time_values = list(int (x) for x in acquisition_date_time_check.groups())
                     else:
-                        acquisition_date_time_check = aquisition_date_pattern_comp.search(acquisition_date_time)
-                        try:
-                            time_values = list(int (x) for x in acquisition_date_time_check.groups())
-                        except AttributeError as e:
-                            continue
-                        acquisition_date_time_correct = f"\
+                        if acquisition_date_time == "n/a":
+                            acquisition_date_time_correct = "n/a"
+                        else:
+                            print("variables juntas")
+                            acquisition_date_time_check = aquisition_date_pattern_comp.search(acquisition_date_time)
+                            try:
+                                time_values = list(int (x) for x in acquisition_date_time_check.groups())
+                            except AttributeError as e:
+                                print("error de formato:", acquisition_date_time)
+                            acquisition_date_time_correct = f"\
 {time_values[0]:04d}-\
 {time_values[1]:02d}-\
 {time_values[2]:02d}T\
@@ -200,7 +215,7 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part, debug_le
                     if modality in ["OP", "SC", "XC", "OT", "SM"]:
                         
                         try:
-                            folder_conversion = dicom2png(path_dicoms, options_dcm2niix) #.joinpath("resources")
+                            folder_conversion = dicom2png(path_dicoms) #.joinpath("resources")
                         except RuntimeError as e:
                             continue
                         modality_ = ("op" if modality in ["OP", "SC", "XC", "OT"] else "BF")
@@ -212,6 +227,28 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part, debug_le
                         print(modality,  mids_session_path.joinpath(mim))
                         print("!"*79)
                         procedure_class_light.control_image(folder_conversion, mids_session_path.joinpath(mim), dict_json, session_name, modality_, acq, laterality, acquisition_date_time_correct)
+                    
+                    if modality in ["CR", "DX"]:
+                        try:
+                            folder_conversion = dicom2png(path_dicoms, options_dcm2niix) #.joinpath("resources")
+                        except RuntimeError as e:
+                            continue
+                        modality_ = modality.lower()
+                        
+                        
+                        
+                        # print(laterality, acq)
+                        print("!"*79)
+                        print(modality,  mids_session_path.joinpath(mim))
+                        print("!"*79)
+                        procedure_class_radiology.control_image(
+                            folder_conversion,
+                            mids_session_path,
+                            dict_json,
+                            session_name,
+                            modality_,
+                            acquisition_date_time_correct
+                        )
                     
         if debug_level == 3: continue
         procedure_class_mr.copy_sessions(subject_name)
@@ -302,7 +339,24 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
                     patient_sex = json_file[participants_keys[4]]
                 except KeyError as e:
                     patient_sex = "n/a"
-                acquisition_date_time_check = aquisition_date_pattern_comp.search(json_file[participants_keys[5]])
+                acquisition_date_time = dict_json.get("AcquisitionDateTime", "n/a")
+                acquisition_date = dict_json.get("AcquisitionDate", "n/a")
+                acquisition_time = dict_json.get("AcquisitionTime", "n/a")
+                if (acquisition_date != "n/a") and acquisition_time != "n/a":
+                    acquisition_date_time = str(acquisition_date) + str(acquisition_time)
+                    acquisition_date_time_check = aquisition_date_pattern_comp.search(acquisition_date_time)
+                else:
+                    if acquisition_date_time == "n/a":
+                        acquisition_date_time_correct = "n/a"
+                    else:
+                        acquisition_date_time_check = aquisition_date_pattern_comp.search(acquisition_date_time)
+                try:
+                    time_values = list(int (x) for x in acquisition_date_time_check.groups())
+                except AttributeError as e:
+                    print("error de formato")
+                
+                # acquisition_date_time_check = aquisition_date_pattern_comp.search(json_file[participants_keys[5]])
+
                 try:
                     time_values = list(int (x) for x in acquisition_date_time_check.groups())
                 except AttributeError as e:
