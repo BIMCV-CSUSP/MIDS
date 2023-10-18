@@ -16,11 +16,12 @@ from tqdm import tqdm
 from pandas.errors import EmptyDataError
 ##1003-2-4T02:23:43.3245
 ##20231212020401.23452
+adquisition_date_pattern_2 = r"(?P<fecha1>(?P<year>\d{4})-(?P<month>\d+)-(?P<day>\d+)T(?P<hour>\d+):(?P<minutes>\d+):(?P<seconds>\d+).(?P<ms>\d+))|(?P<fecha2>(?P<year2>\d{4})(?P<month2>\d{2})(?P<day2>\d{2})(?P<hour2>\d{2})(?P<minutes2>\d{2})(?P<seconds2>\d{2}).(?P<ms2>\d+))"
 adquisition_date_pattern = r"(?P<year>\d+)-(?P<month>\d+)-(?P<day>\d+)T(?P<hour>\d+):(?P<minutes>\d+):(?P<seconds>\d+).(?P<ms>\d+)"
 subses_pattern = r"[A-z]+(?P<prefix_sub>\d*)?(_S)(?P<suffix_sub>\d+)(\\|/)[A-z]+\-?[A-z]*(?P<prefix_ses>\d*)?(_E)(?P<suffix_ses>\d+)"
 prostate_pattern = r"(?:(?:(?:diff?|dwi)(?:\W|_)(?:.*)(?:b\d+))|dif 2000)|(?:adc|Apparent)|prop|blade|fse|tse|^ax T2$"
 chunk_pattern = r"_chunk-(?P<chunk>\d)+"
-aquisition_date_pattern_comp = re.compile(adquisition_date_pattern)
+aquisition_date_pattern_comp = re.compile(adquisition_date_pattern_2)
 prostate_pattern_comp = re.compile(prostate_pattern, re.I)
 chunk_pattern_comp = re.compile(chunk_pattern)
 dict_keys = {
@@ -101,12 +102,12 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part, debug_le
     procedure_class_mr = ProceduresMR()
     procedure_class_light = LightProcedure()
     procedure_class_radiology = RadiologyProcedure()
-    for subject_xnat_path in tqdm(xnat_data_path.glob('*/')):
+    for subject_xnat_path in tqdm(xnat_data_path.iterdir()):
         if "_S" not in subject_xnat_path.name:continue
         # num_sessions = len(list(subject_xnat_path.glob('*/')))
         procedure_class_mr.reset_indexes()
         procedure_class_light.reset_indexes()
-        for sessions_xnat_path in subject_xnat_path.glob('*/'):
+        for sessions_xnat_path in subject_xnat_path.iterdir():
             if "_E" not in sessions_xnat_path.name: continue
             
 
@@ -176,18 +177,30 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part, debug_le
                             print("variables juntas")
                             acquisition_date_time_check = aquisition_date_pattern_comp.search(acquisition_date_time)
                             try:
-                                time_values = list(int (x) for x in acquisition_date_time_check.groups())
+                                if acquisition_date_time_check.group("fecha1"):
+                                    acquisition_date_time_correct = f'\
+{int(acquisition_date_time_check.group("year")):04d}-\
+{int(acquisition_date_time_check.group("month")):02d}-\
+{int(acquisition_date_time_check.group("day")):02d}T\
+{int(acquisition_date_time_check.group("hour")):02d}:\
+{int(acquisition_date_time_check.group("minutes")):02d}:\
+{int(acquisition_date_time_check.group("seconds")):02d}.\
+{int(acquisition_date_time_check.group("ms")):06d}\
+'
+                                else:
+                                    acquisition_date_time_correct = f'\
+{int(acquisition_date_time_check.group("year2")):04d}-\
+{int(acquisition_date_time_check.group("month2")):02d}-\
+{int(acquisition_date_time_check.group("day2")):02d}T\
+{int(acquisition_date_time_check.group("hour2")):02d}:\
+{int(acquisition_date_time_check.group("minutes2")):02d}:\
+{int(acquisition_date_time_check.group("seconds2")):02d}.\
+{int(acquisition_date_time_check.group("ms2")):06d}\
+'
                             except AttributeError as e:
                                 print("error de formato:", acquisition_date_time)
-                            acquisition_date_time_correct = f"\
-{time_values[0]:04d}-\
-{time_values[1]:02d}-\
-{time_values[2]:02d}T\
-{time_values[3]:02d}:\
-{time_values[4]:02d}:\
-{time_values[5]:02d}.\
-{time_values[6]:06d}\
-"
+                           
+
                     # print()
                     # print(modality, study_description, ProtocolName, image_type)
                     print(f"{study_description}")
@@ -331,45 +344,92 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
                     body_parts.append(json_file[participants_keys[2]].lower())
                 except KeyError as e:
                     body_parts.append(body_part_aux.lower())
-                try:    
+                try:
+                    print(json_file[participants_keys[3]])
                     patient_birthday = datetime.fromisoformat(json_file[participants_keys[3]])
                 except KeyError as e:
                     patient_birthday = "n/a"
+                except ValueError as e:
+                    birtday = json_file[participants_keys[3]]
+                    if birtday:
+                        correct_birtday = f"{birtday[0:4]}-{birtday[4:6]}-{birtday[6:8]}"
+                        patient_birthday = datetime.fromisoformat(correct_birtday)
+                    else:
+                        patient_birthday = "n/a"
                 try:
                     patient_sex = json_file[participants_keys[4]]
                 except KeyError as e:
                     patient_sex = "n/a"
-                acquisition_date_time = dict_json.get("AcquisitionDateTime", "n/a")
-                acquisition_date = dict_json.get("AcquisitionDate", "n/a")
-                acquisition_time = dict_json.get("AcquisitionTime", "n/a")
+                acquisition_date_time = json_file.get("AcquisitionDateTime", "n/a")
+                acquisition_date = json_file.get("AcquisitionDate", "n/a")
+                acquisition_time = json_file.get("AcquisitionTime", "n/a")
+
                 if (acquisition_date != "n/a") and acquisition_time != "n/a":
-                    acquisition_date_time = str(acquisition_date) + str(acquisition_time)
-                    acquisition_date_time_check = aquisition_date_pattern_comp.search(acquisition_date_time)
+                    print("variables separadas")
+                    date = str(acquisition_date)
+                    time = str(acquisition_time)
+                    acquisition_date_time_correct = f"{date[:4]}-{date[4:6]}-{date[6:8]}T{time[:2]}:{time[2:4]}:{time[4:6]}.000"
+                    #acquisition_date_time_correct = aquisition_date_pattern_comp.search(acquisition_date_time)
+                    #time_values = list(int (x) for x in acquisition_date_time_check.groups())
                 else:
                     if acquisition_date_time == "n/a":
                         acquisition_date_time_correct = "n/a"
                     else:
+                        print("variables juntas")
                         acquisition_date_time_check = aquisition_date_pattern_comp.search(acquisition_date_time)
-                try:
-                    time_values = list(int (x) for x in acquisition_date_time_check.groups())
-                except AttributeError as e:
-                    print("error de formato")
-                
-                # acquisition_date_time_check = aquisition_date_pattern_comp.search(json_file[participants_keys[5]])
+                        try:
+                            if acquisition_date_time_check.group("fecha1"):
+                                    acquisition_date_time_correct = f'\
+{int(acquisition_date_time_check.group("year")):04d}-\
+{int(acquisition_date_time_check.group("month")):02d}-\
+{int(acquisition_date_time_check.group("day")):02d}T\
+{int(acquisition_date_time_check.group("hour")):02d}:\
+{int(acquisition_date_time_check.group("minutes")):02d}:\
+{int(acquisition_date_time_check.group("seconds")):02d}.\
+{int(acquisition_date_time_check.group("ms")):06d}\
+'
+                            else:
+                                acquisition_date_time_correct = f'\
+{int(acquisition_date_time_check.group("year2")):04d}-\
+{int(acquisition_date_time_check.group("month2")):02d}-\
+{int(acquisition_date_time_check.group("day2")):02d}T\
+{int(acquisition_date_time_check.group("hour2")):02d}:\
+{int(acquisition_date_time_check.group("minutes2")):02d}:\
+{int(acquisition_date_time_check.group("seconds2")):02d}.\
+{int(acquisition_date_time_check.group("ms2")):06d}\
+'
+                        except AttributeError as e:
+                            print("error de formato:", acquisition_date_time)
+                        
 
-                try:
-                    time_values = list(int (x) for x in acquisition_date_time_check.groups())
-                except AttributeError as e:
-                        continue
-                acquisition_date_time_correct = f"\
-{time_values[0]:04d}-\
-{time_values[1]:02d}-\
-{time_values[2]:02d}T\
-{time_values[3]:02d}:\
-{time_values[4]:02d}:\
-{time_values[5]:02d}.\
-{time_values[6]:06d}\
-"
+#                 if (acquisition_date != "n/a") and acquisition_time != "n/a":
+#                     acquisition_date_time = str(acquisition_date) + str(acquisition_time)
+#                     acquisition_date_time_check = aquisition_date_pattern_comp.search(acquisition_date_time)
+#                 else:
+#                     if acquisition_date_time == "n/a":
+#                         acquisition_date_time_correct = "n/a"
+#                     else:
+#                         acquisition_date_time_check = aquisition_date_pattern_comp.search(acquisition_date_time)
+#                 try:
+#                     time_values = list(int (x) for x in acquisition_date_time_check.groups())
+#                 except AttributeError as e:
+#                     print("error de formato")
+                
+#                 # acquisition_date_time_check = aquisition_date_pattern_comp.search(json_file[participants_keys[5]])
+
+#                 try:
+#                     time_values = list(int (x) for x in acquisition_date_time_check.groups())
+#                 except AttributeError as e:
+#                         continue
+#                 acquisition_date_time_correct = f"\
+# {time_values[0]:04d}-\
+# {time_values[1]:02d}-\
+# {time_values[2]:02d}T\
+# {time_values[3]:02d}:\
+# {time_values[4]:02d}:\
+# {time_values[5]:02d}.\
+# {time_values[6]:06d}\
+# "
                 adquisition_date_time = datetime.fromisoformat(acquisition_date_time_correct)
                 # adquisition_date_time = datetime.fromisoformat(json_file[participants_keys[5]].split('T')[0])
                 if patient_birthday != "n/a":
