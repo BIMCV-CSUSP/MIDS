@@ -131,8 +131,9 @@ def dict2bids(dict_):
         for key, element in dict_.items():
             
             description = pydicom.datadict.keyword_for_tag(key)
-            #print(element.get("Value", [""])[0], type(element.get("Value", [""])[0]),type(element.get("Value", [""])[0]) is not dict )
-            dicom_dict[description] = element.get("Value", [""])[0] if type(element.get("Value", [""])[0]) is not dict else dict2bids(element.get("Value", [""])[0])
+
+            elem = element.get("Value", [""])[0] if element.get("Value", [""]) else ""#, type(element.get("Value", [""])[0]),type(element.get("Value", [""])[0]) is not dict )
+            dicom_dict[description] = elem if type(elem) is not dict else dict2bids(element.get("Value", [""])[0])
             
     return dicom_dict
 
