@@ -72,12 +72,17 @@ def dicom2png(folder_json):
     # if folder_json.parent.parent.joinpath("LOCAL_NIFTI").exists():
     #     shutil.rmtree(folder_json.parent.parent.joinpath("LOCAL_NIFTI"))
     dcm_files = list(folder_json.rglob("*.dcm"))
+    print(dcm_files)
     for dcm_file in dcm_files:
-        
+        print(f"dcm file: {dcm_file}")
         
         folder_png = folder_json.parent.parent.joinpath("LOCAL_PNG","files", dcm_file.stem+".png")
         folder_png.parent.mkdir(parents=True, exist_ok=True)
-        sitk_img = sitk.ReadImage(dcm_file)
+        try:
+            sitk_img = sitk.ReadImage(dcm_file)
+        except RuntimeError:
+            print(f"error to convert: {dcm_file}")
+            continue
         sitk.WriteImage(sitk_img, folder_png)
     shutil.copy2(str(folder_json.joinpath("bids.json")), str(folder_png.parent))
     # if sistema == "Linux":
