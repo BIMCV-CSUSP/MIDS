@@ -103,20 +103,20 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part, debug_le
     procedure_class_light = LightProcedure()
     procedure_class_radiology = RadiologyProcedure()
     for subject_xnat_path in tqdm(xnat_data_path.iterdir()):
-        if "_S" not in subject_xnat_path.name:continue
+        # if "_S" not in subject_xnat_path.name:continue
         # num_sessions = len(list(subject_xnat_path.glob('*/')))
         procedure_class_mr.reset_indexes()
         procedure_class_light.reset_indexes()
         for sessions_xnat_path in subject_xnat_path.iterdir():
-            if "_E" not in sessions_xnat_path.name: continue
+            # if "_E" not in sessions_xnat_path.name: continue
             
 
             print(sessions_xnat_path)
             findings = re.search(subses_pattern, str(sessions_xnat_path), re.X)
             #print('subject,', findings.group('prefix_sub'), findings.group('suffix_sub'))
             #print('session,', findings.group('prefix_ses'), findings.group('suffix_ses'))
-            subject_name = f"sub-{findings.group('prefix_sub')}S{findings.group('suffix_sub')}"
-            session_name = f"ses-{findings.group('prefix_ses')}E{findings.group('suffix_ses')}"
+            subject_name = f"sub-{subject_xnat_path.stem}" #f"sub-{findings.group('prefix_sub')}S{findings.group('suffix_sub')}"
+            session_name = f"ses-{sessions_xnat_path.stem}" #f"ses-{findings.group('prefix_ses')}E{findings.group('suffix_ses')}"
 
             mids_session_path = mids_data_path.joinpath(subject_name, session_name)
             xml_session_rois = list(sessions_xnat_path.rglob('*.xml'))
@@ -227,15 +227,12 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part, debug_le
                     
                     if modality in ["OP", "SC", "XC", "OT", "SM"]:
                         
-                        try:
-                            folder_conversion = dicom2png(path_dicoms) #.joinpath("resources")
-                        except RuntimeError as e:
-                            continue
-                        modality_ = ("op" if modality in ["OP", "SC", "XC", "OT"] else "BF")
-                        mim = ("mim-ligth" if modality in ["OP", "SC", "XC", "OT"] else "micr")
+                        
+                        folder_conversion = dicom2png(path_dicoms) #.joinpath("resources")
+                        modality_, mim= (("op", "mim-ligth/op") if modality in ["OP", "SC", "XC", "OT"] else ("BF", "micr"))
                         laterality = dict_json.get("Laterality")
                         acq = "" if "ORIGINAL" in image_type else "opacitysubstract"
-                        # print(laterality, acq)
+                        
                         print("!"*79)
                         print(modality,  mids_session_path.joinpath(mim))
                         print("!"*79)
@@ -273,12 +270,14 @@ participants_keys = ['PatientID','Modality', 'BodyPartExamined', 'PatientBirthDa
 session_header = ['session_id','session_pseudo_id', 'acquisition_date_Time','radiology_report']
 sessions_keys = ['AccessionNumber', 'AcquisitionDateTime']
 scans_header = [
-    'scan_file','BodyPart',
-    'Manufacturer','ManufacturersModelName','DeviceSerialNumber',
+    'scan_file','BodyPart','SeriesNumber','AccessionNumber',
+    'Manufacturer','ManufacturerModelName',
     'MagneticFieldStrength','ReceiveCoilName','PulseSequenceType',
     'ScanningSequence','SequenceVariant','ScanOptions','SequenceName','PulseSequenceDetails','MRAcquisitionType',
     'EchoTime','InversionTime','SliceTiming','SliceEncodingDirection','FlipAngle'
 ]
+scans_header_micr = ['scan_file','BodyPart','SeriesNumber','AccessionNumber','Manufacturer','ManufacturerModelName','Modality', 'Columns','Rows','PhotometricInterpretation','ImagedVolumeHeight', 'ImagedVolumeHeight']
+scans_header_op = ['scan_file','BodyPart','SeriesNumber','AccessionNumber','Manufacturer','ManufacturerModelName','Modality', 'Columns','Rows','PhotometricInterpretation', 'Laterality']
 
 def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
     """
@@ -290,20 +289,13 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
     for subject_path in mids_data_path.glob('*/'):
         if not subject_path.match("sub-*"): continue
         subject = subject_path.parts[-1]
-        
-        old_subject = "_".join([
-                subject.split("-")[-1].split("S")[0],
-                "S"+subject.split("-")[-1].split("S")[1]
-            ])
+        old_subject =subject.split("-")[-1]
         list_sessions_information = []
         for session_path in subject_path.glob('*/'):
             if not session_path.match("ses-*"): continue
             session = session_path.parts[-1]
             
-            old_sesion = "_".join([
-                session.split("-")[-1].split("E")[0],
-                "E"+session.split("-")[-1].split("E")[1]
-            ])
+            old_sesion = session.split("-")[-1]
             
             modalities = []
             body_parts = []
@@ -401,35 +393,6 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
                         except AttributeError as e:
                             print("error de formato:", acquisition_date_time)
                         
-
-#                 if (acquisition_date != "n/a") and acquisition_time != "n/a":
-#                     acquisition_date_time = str(acquisition_date) + str(acquisition_time)
-#                     acquisition_date_time_check = aquisition_date_pattern_comp.search(acquisition_date_time)
-#                 else:
-#                     if acquisition_date_time == "n/a":
-#                         acquisition_date_time_correct = "n/a"
-#                     else:
-#                         acquisition_date_time_check = aquisition_date_pattern_comp.search(acquisition_date_time)
-#                 try:
-#                     time_values = list(int (x) for x in acquisition_date_time_check.groups())
-#                 except AttributeError as e:
-#                     print("error de formato")
-                
-#                 # acquisition_date_time_check = aquisition_date_pattern_comp.search(json_file[participants_keys[5]])
-
-#                 try:
-#                     time_values = list(int (x) for x in acquisition_date_time_check.groups())
-#                 except AttributeError as e:
-#                         continue
-#                 acquisition_date_time_correct = f"\
-# {time_values[0]:04d}-\
-# {time_values[1]:02d}-\
-# {time_values[2]:02d}T\
-# {time_values[3]:02d}:\
-# {time_values[4]:02d}:\
-# {time_values[5]:02d}.\
-# {time_values[6]:06d}\
-# "
                 adquisition_date_time = datetime.fromisoformat(acquisition_date_time_correct)
                 # adquisition_date_time = datetime.fromisoformat(json_file[participants_keys[5]].split('T')[0])
                 if patient_birthday != "n/a":
@@ -444,6 +407,35 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
                                 str(Path(".").joinpath(*nifti.parts[-2:])),
                                  body_parts[-1], 
                                  *[json_file.get(key, "n/a") for key in scans_header[2:]]
+                            ]
+                        ) 
+                        
+
+                    })
+                if json_file[participants_keys[1]] in ["OP", "SC", "XC", "OT"]:
+                    list_scan_information.append({
+                        key:value
+                        for nifti in list_nifties for key, value in zip(
+                            scans_header_op,
+                            [
+                                str(Path(".").joinpath(*nifti.parts[-2:])),
+                                 body_parts[-1], 
+                                 *[json_file.get(key, "n/a") for key in scans_header_op[2:]]
+                            ]
+                        ) 
+                        
+
+                    })
+                if json_file[participants_keys[1]] in ["SM"]:
+                    print("estoy en SM")
+                    list_scan_information.append({
+                        key:value
+                        for nifti in list_nifties for key, value in zip(
+                            scans_header_micr,
+                            [
+                                str(Path(".").joinpath(*nifti.parts[-2:])),
+                                 body_parts[-1], 
+                                 *[json_file.get(key, "n/a") for key in scans_header_micr[2:]]
                             ]
                         ) 
                         
