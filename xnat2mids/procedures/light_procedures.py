@@ -23,6 +23,7 @@ class LightProcedure(Procedures):
         print(acquisition_date_time)
         value.append({
             "run":png_files, 
+            "series_number": dict_json.get("SeriesNumber", ),
             "adquisition_time":datetime.fromisoformat(acquisition_date_time), 
             "folder_mids": mids_session_path})
         self.run_dict[key]=value
@@ -34,7 +35,7 @@ class LightProcedure(Procedures):
             df_aux.sort_values(by="adquisition_time", inplace = True)
             df_aux.index = numpy.arange(1, len(df_aux) + 1)
             print(len(df_aux))
-            activate_run = True if len(df_aux) > 1 else False
+            activate_run = True #if len(df_aux) > 1 else False
             print(f"{activate_run}")
             for index, row in df_aux.iterrows():
                 activate_acq_partioned = True if len(row['run']) > 1 else False
@@ -43,7 +44,7 @@ class LightProcedure(Procedures):
                     dest_file_name = self.calculate_name(
                         subject_name=subject_name, 
                         key=key,
-                        num_run=index, 
+                        num_run=row["series_number"], 
                         num_part=acq, 
                         activate_run=activate_run, 
                         activate_acq_partioned=activate_acq_partioned
