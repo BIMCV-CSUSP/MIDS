@@ -48,8 +48,8 @@ class ScanResources(dict):
 
         complet_path = path_download.joinpath(
             dict_paths["path_download"](
-                self["scan"]["session"]["subject"]["ID"],
-                self["scan"]["session"]["ID"],
+                self["scan"]["session"]["subject"]["label"],
+                self["scan"]["session"]["label"],
                 self["scan"]["ID"],
                 self["label"]
             )

@@ -19,7 +19,7 @@ class Session(dict):
     def get_list_scans(self, verbose):
         output = StringIO()
         if verbose: print(
-            format_message(self.level_verbose, self.level_tab, f"Session: {self['ID']}"), flush=True)
+            format_message(self.level_verbose, self.level_tab, f"Session: {self['label']}"), flush=True)
         output.write(
             try_to_request(
                 self["subject"]["project"].interface,

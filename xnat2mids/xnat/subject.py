@@ -14,12 +14,12 @@ class Subject(dict):
     def get_list_experiments(self, verbose):
 
         output = StringIO()
-        if verbose: print(format_message(self.level_verbose, self.level_tab, f"Subject: {self['ID']}"), flush=True)
+        if verbose: print(format_message(self.level_verbose, self.level_tab, f"Subject: {self['label']}"), flush=True)
         output.write(
             try_to_request(
                 self["project"].interface,
                 self["project"].url_xnat
-                + dict_uris["experiments"](self["project"]["ID"], self["ID"])
+                + dict_uris["experiments"](self["project"]["ID"], self["label"])
             ).text
         )
         output.seek(0)
