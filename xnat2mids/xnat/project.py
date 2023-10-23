@@ -18,7 +18,7 @@ class Project(dict):
         output = StringIO()
 
         if verbose:
-            print(format_message(self.level_verbose, self.level_tab, "Project: {}".format(self["ID"])), flush=True)
+            print(format_message(self.level_verbose, self.level_tab, "Project: {}".format(self["secondary_ID"])), flush=True)
         output.write(try_to_request(self.interface, self.url_xnat
                                     + dict_uris["subjects"](self["ID"])
                                     ).text)
