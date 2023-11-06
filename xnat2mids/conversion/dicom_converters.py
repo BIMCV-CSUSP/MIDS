@@ -40,7 +40,7 @@ def dicom2nifti(folder_json):
 def dicom2niix(folder_json, str_options):
     folder_nifti = folder_json.parent.parent.joinpath("LOCAL_NIFTI", "files")
     folder_nifti.mkdir(parents=True, exist_ok=True)
-    print(f"dcm2niix {str_options} -o {folder_nifti} {folder_json}")
+    #print(f"dcm2niix {str_options} -o {folder_nifti} {folder_json}")
     if sistema == "Linux":
         subprocess.call(
             f"dcm2niix {str_options} -o {folder_nifti} {folder_json}",
@@ -49,7 +49,7 @@ def dicom2niix(folder_json, str_options):
             stderr=subprocess.STDOUT
         )
     else:
-        print(f"dcm2niix.exe {str_options} -o {folder_nifti} {folder_json}")
+        #print(f"dcm2niix.exe {str_options} -o {folder_nifti} {folder_json}")
         subprocess.call(
             f"dcm2niix.exe {str_options} -o {folder_nifti} {folder_json}",
             shell=True,
@@ -65,16 +65,10 @@ def dicom2niix(folder_json, str_options):
 
 
 def dicom2png(folder_json):
-    # shutil.move(
-    #         str(folder_json.parent.parent.joinpath("LOCAL_NIFTI")),
-    #         str(folder_json.parent.parent.joinpath("LOCAL_PNG"))
-    # )
-    # if folder_json.parent.parent.joinpath("LOCAL_NIFTI").exists():
-    #     shutil.rmtree(folder_json.parent.parent.joinpath("LOCAL_NIFTI"))
     dcm_files = list(folder_json.rglob("*.dcm"))
-    print(dcm_files)
+    
     for dcm_file in dcm_files:
-        print(f"dcm file: {dcm_file}")
+        
         
         folder_png = folder_json.parent.parent.joinpath("LOCAL_PNG","files", dcm_file.stem+".png")
         folder_png.parent.mkdir(parents=True, exist_ok=True)
@@ -136,8 +130,9 @@ def dict2bids(dict_):
         for key, element in dict_.items():
             
             description = pydicom.datadict.keyword_for_tag(key)
-
-            elem = element.get("Value", [""])[0] if element.get("Value", [""]) else ""#, type(element.get("Value", [""])[0]),type(element.get("Value", [""])[0]) is not dict )
+            
+            elem = element.get("Value", [""]) if element.get("Value", [""]) else [""]#, type(element.get("Value", [""])[0]),type(element.get("Value", [""])[0]) is not dict )
+            elem = elem[0] if len(elem)<2 else elem
             dicom_dict[description] = elem if type(elem) is not dict else dict2bids(element.get("Value", [""])[0])
             
     return dicom_dict
