@@ -11,14 +11,14 @@ class LightProcedure(Procedures):
     def reset_indexes(self):
         self.run_dict = {}
 
-    def control_image(self, folder_conversion, mids_session_path, dict_json, session_name, protocol, rec, laterality, acquisition_date_time):
+    def control_image(self, folder_conversion, mids_session_path, dict_json, session_name, protocol, rec, laterality, acquisition_date_time,body_part):
         png_files = sorted([i for i in folder_conversion.glob("*.png")])
         #nifti_files = sorted([i for i in folder_conversion.glob("*.nii*")])
         
         len_files = len(png_files)
         if not len_files: return
 
-        key = json.dumps([session_name, rec, laterality, protocol])
+        key = json.dumps([session_name, rec, laterality, protocol, body_part])
         value = self.run_dict.get(key, [])
         print(acquisition_date_time)
         value.append({
@@ -38,7 +38,7 @@ class LightProcedure(Procedures):
             activate_run = True #if len(df_aux) > 1 else False
             print(f"{activate_run}")
             for index, row in df_aux.iterrows():
-                activate_acq_partioned = True if len(row['run']) > 1 else False
+                activate_chunk_partioned = True if len(row['run']) > 1 else False
                 for acq, file_ in enumerate(sorted(row['run'])):
                 
                     dest_file_name = self.calculate_name(
@@ -47,7 +47,7 @@ class LightProcedure(Procedures):
                         num_run=row["series_number"], 
                         num_part=acq, 
                         activate_run=activate_run, 
-                        activate_acq_partioned=activate_acq_partioned
+                        activate_chunk_partioned=activate_chunk_partioned
                     )
                     print("-"*79)
                     print(row["folder_mids"])
@@ -63,24 +63,19 @@ class LightProcedure(Procedures):
                     print("destino:", row["folder_mids"].joinpath(str(dest_file_name) + "".join(other_file.suffixes)))
                     shutil.copyfile(str(other_file), row["folder_mids"].joinpath(str(dest_file_name) + "".join(other_file.suffixes)))
 
-    def calculate_name(self, subject_name, key, num_run, num_part, activate_run, activate_acq_partioned):
+    def calculate_name(self, subject_name, key, num_run, num_part, activate_run, activate_chunk_partioned):
         key_list = json.loads(key)
         print(key_list)
-        # print(num_part, activate_acq_partioned)
-        
-        rec = f"{key_list[1] if key_list[1] else ''}"
-        chunk = f"{num_part+1 if activate_acq_partioned else ''}"
-        run = f"{num_run if activate_run else ''}"
-        print(f"{run}")
+        # print(num_part, activate_chunk_partioned)
+        sub = subject_name
+        ses = key_list[0]
+        rec = f"rec-{key_list[1] if key_list[1] else ''}"
+        run = f"run-{num_run if activate_run else ''}"
+        bp = f"bp-{key_list[4]}" if key_list[4] else ""
+        lat = f"lat-{key_list[2]}" if key_list[2] else ""
+        chunk = f"chunk-{num_part+1 if activate_chunk_partioned else ''}"
+        mod = key_list[3]
         # print(f"{key=}")
         return "_".join([
-            part for part in [
-                subject_name,
-                key_list[0],
-                f"acq-{key_list[2]}" if key_list[2] else "",
-                f"rec-{rec}",
-                f'run-{run}',
-                (f'chunk-{chunk}') if activate_acq_partioned else '',
-                key_list[3]
-            ] if part.split('-')[-1] != ''
+            part for part in [sub, ses, rec, run, bp, lat, chunk, mod] if part.split('-')[-1] != ''
         ])
