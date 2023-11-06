@@ -58,7 +58,7 @@ from xnat2mids.xnat.variables import format_message
 from xnat2mids.xnat.variables import reset_terminal
 from xnat2mids.xnat.variables import dict_paths
 from xnat2mids.xnat.variables import dict_uris
-from xnat2mids.mids_conversion import  create_directory_mids_v1
+from xnat2mids.mids_conversion import create_directory_mids_v1
 from xnat2mids.mids_conversion import create_tsvs
 
 
@@ -119,8 +119,8 @@ def main():
     #                         default = nr""")
     # save the arguments in varaibles
     args = parser.parse_args()
-    print(reset_terminal, end="", flush=True)
-    print(args)
+    # print(reset_terminal, end="", flush=True)
+    # print(args)
     page = args.web
     user = args.user
     xnat_data_path = Path(args.input)
@@ -131,7 +131,6 @@ def main():
     body_part = args.body_part
     #types = args.types[0]
     overwrite = args.overwrite
-    print(debug_level)
     # Comprobation if Xnat dowload can be execute
     if xnat_data_path and page:
         xnat_data_path.mkdir(exist_ok=True)
@@ -162,18 +161,16 @@ def main():
         if not xnat_data_path.exists(): 
             raise FileNotFoundError(f'No folder exists at the location specified in {xnat_data_path}') 
         mids_data_path = mids_data_path.joinpath(xnat_project)
-        print(f"{xnat_data_path}")
-        print(f"{mids_data_path}")
+        if debug_level < 4:
+            print("MIDS are generating...")
+            create_directory_mids_v1(
+                xnat_data_path,
+                mids_data_path,
+                body_part,
+                debug_level
+            )
 
-        print("MIDS are generating...")
-        create_directory_mids_v1(
-            xnat_data_path,
-            mids_data_path,
-            body_part,
-            debug_level
-        )
-
-        print("participats tsv are generating...")
+        print("tsvs are generating...")
         create_tsvs(xnat_data_path, mids_data_path, body_part)
 
         # print("scan tsv are generating...")
