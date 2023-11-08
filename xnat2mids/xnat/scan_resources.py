@@ -91,8 +91,8 @@ class ScanResources(dict):
 
     def download_nifti(self, path_download, filename, overwrite=False, verbose=False):
         complet_path = path_download.joinpath(dict_paths["path_download"](
-            self["scan"]["session"]["subject"]["ID"],
-            self["scan"]["session"]["ID"],
+            self["scan"]["session"]["subject"]["label"],
+            self["scan"]["session"]["label"],
             self["scan"]["ID"],
             self["label"]
         ))
@@ -202,11 +202,17 @@ class ScanResources(dict):
                     path_download, file_obj["Name"], overwrite=overwrite, verbose=verbose
                 )
 
-            #if self["label"] == "NIFTI":
-            #    self.download_nifti(path_download, file_obj["Name"], overwrite=overwrite, verbose=verbose)
+            if self["label"] in  ["NIFTI", "BIDS"]:
+                print(format_message(self.level_verbose + 1, self.level_tab + 1, f"{index} of {self['file_count']}"),
+                      end="",
+                      flush=True)
+                self.download_nifti(path_download, file_obj["Name"], overwrite=overwrite, verbose=verbose)
 
             #if self["label"] == "PNG":
             #    self.download_png(path_download, file_obj["Name"], overwrite=overwrite, verbose=verbose)
+
+            # if self["label"] == "BIDS":
+            #    self.download_nifti(path_download, file_obj["Name"], overwrite=overwrite, verbose=verbose)
 
         print(format_message(self.level_verbose, self.level_tab, "\u001b[0K"), end="", flush=True)
         print(format_message(self.level_verbose + 1, self.level_tab + 1, "\u001b[0K"), end="", flush=True)
