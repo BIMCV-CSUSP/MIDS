@@ -18,19 +18,19 @@ def try_to_request(interface, web, level_verbose=15, level_tab=15):
 
             print(
                 format_message(
-                    level_verbose,
+                    level_verbose+10,
                     level_tab,
-                    "Intents to download information = {}".format(intents)
+                    "Intents to download information = {}. Error:{}".format(intents, e)
                 )
             )
             time.sleep(60)
         except requests.exceptions.HTTPError:
             print(
                 format_message(
-                    level_verbose,
+                    level_verbose+10,
                     level_tab,
-                    "Intents to download information = {}".format(intents)
+                    "Intents to download information = {}. Error:{}".format(intents, e)
                 )
             )
-            time.sleep(60)
+            [time.sleep(60)]
     return req
