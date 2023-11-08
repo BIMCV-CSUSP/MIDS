@@ -38,9 +38,10 @@ class Subject(dict):
         self.get_list_experiments(verbose)
         # move the cursor
         for session_obj in self.dict_sessions.values():
-            session_obj.download(
-                path_download, bool_list_resources,
-                overwrite=overwrite, verbose=verbose
-            )
+            # if "MR" in session_obj["label"]:
+                session_obj.download(
+                    path_download, bool_list_resources,
+                    overwrite=overwrite, verbose=verbose
+                )
 
         print(format_message(self.level_verbose, self.level_tab, "\u001b[0K"), end="", flush=True)

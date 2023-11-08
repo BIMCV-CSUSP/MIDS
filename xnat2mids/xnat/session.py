@@ -183,10 +183,11 @@ class Session(dict):
         # print("\033[7;0H\u001b[0K", end="",flush=True)
         self.get_list_scans(verbose)
         for scan_obj in self.dict_scans.values():
-             scan_obj.download(
-                 path_download, bool_list_resources=bool_list_resources,
-                 overwrite=overwrite, verbose=verbose
-             )
+            # if "anat" in scan_obj["ID"]:
+                scan_obj.download(
+                    path_download, bool_list_resources=bool_list_resources,
+                    overwrite=overwrite, verbose=verbose
+                )
 
         # print("\033[18;0H\u001b[0K", end="",flush=True)
         #self.get_list_struct_report(path_download, bool_list_resources, overwrite=False, verbose=verbose)
@@ -201,11 +202,9 @@ class Session(dict):
 
         self.get_list_session_resources(verbose)
         for resource_obj in self.dict_resources.values():
-
-            resource_obj.download(
-                path_download,
-                bool_list_resources=bool_list_resources,
-                overwrite=overwrite, verbose=verbose)
-            pass
+                resource_obj.download(
+                    path_download,
+                    bool_list_resources=bool_list_resources,
+                    overwrite=overwrite, verbose=verbose)
         print(format_message(self.level_verbose, self.level_tab, "\u001b[0K"), end="", flush=True)
 
