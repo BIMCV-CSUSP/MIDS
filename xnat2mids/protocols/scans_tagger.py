@@ -30,11 +30,11 @@ class Tagger:
         image_type = dict_atrubutes["ImageType"]
         #image_type = dict_atrubutes["ImageType"]
 
-        print(f"{Manufacturer}")
-        print(f"{scaning_sequence}")
-        print(f"{sequence_variant}, {type(sequence_variant)}")
-        print(f"{scan_options}")
-        print(f"{image_type}")
+        print(f"{json.dumps(Manufacturer)}")
+        print(f"{json.dumps(scaning_sequence)}")
+        print(f"{json.dumps(sequence_variant)}")
+        print(f"{json.dumps(scan_options)}")
+        print(f"{json.dumps(image_type)}")
         #scaning_sequence = scaning_sequence if type(scaning_sequence) is str else "\\".join(scaning_sequence)
         
 
