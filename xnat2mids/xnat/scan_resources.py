@@ -58,6 +58,7 @@ class ScanResources(dict):
 
         dicom_path = complet_path.joinpath(filename).with_suffix(".dcm")
         dicom_path_metadata = os.path.join(complet_path, "dicom.json")
+        dicom_path_note = os.path.join(complet_path, "note.txt")
         if not overwrite and (os.path.exists(dicom_path)) and (os.path.exists(dicom_path_metadata)):
             #    #if verbose: print("DICOM file already exist")
             return
@@ -89,6 +90,9 @@ class ScanResources(dict):
             self.is_metadata_saved = True
             self.store_metadata(dicom_path, dicom_path_metadata.format("DICOM"))
 
+        if "note" in self.keys():
+            with open(dicom_path_note, 'wb') as dicom_file:
+                dicom_file.write(self["note"])
     def download_nifti(self, path_download, filename, overwrite=False, verbose=False):
         complet_path = path_download.joinpath(dict_paths["path_download"](
             self["scan"]["session"]["subject"]["label"],
