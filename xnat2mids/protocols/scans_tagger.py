@@ -43,17 +43,19 @@ class Tagger:
             for l in list(self.table_protocols["Manufacturer"])
         ]]
         print("#" * 40, "table_protocol_M", "#" * 40)
-        print(table_protocol_M[["Protocol", "acq"]])
+        print(table_protocol_M[["Protocol", "acq", "Manufacturer"]])
 
         if table_protocol_M.empty: raise EmptyDataError 
-
+        for l in list(table_protocol_M["ScanningSequence"]):
+            print(l)
+            print(json.loads(l))
         table_protocol_M_SS = table_protocol_M[[
             any([True for s in json.loads(l) if s == scaning_sequence])
             for l in list(table_protocol_M["ScanningSequence"])
         ]]
 
         print("#" * 40, "table_protocol_M_SS", "#" * 40)
-        print(table_protocol_M_SS[["Protocol", "acq"]])
+        print(table_protocol_M_SS[["Protocol", "acq", "Manufacturer", "ScanningSequence"]])
         
         table_protocol_M_SS_SV = table_protocol_M_SS[[
             any([True for s in json.loads(l) if s == sequence_variant])
@@ -61,7 +63,7 @@ class Tagger:
         ]]
         
         print("#" * 40, "table_protocol_M_SS_SV", "#" * 40)
-        print(table_protocol_M_SS_SV[["Protocol", "acq"]])
+        print(table_protocol_M_SS_SV[["Protocol", "acq", "Manufacturer", "ScanningSequence"]])
 
         table_protocol_M_SS_SV_SO = table_protocol_M_SS_SV[[
             any([True for s in json.loads(l) if s == scan_options])
@@ -70,15 +72,19 @@ class Tagger:
 
 
         print("#" * 40, "table_protocol_M_SS_VS_SO", "#" * 40)
-        print(table_protocol_M_SS_SV_SO[["Protocol", "acq"]])
+        print(table_protocol_M_SS_SV_SO[["Protocol", "acq", "Manufacturer", "ScanningSequence"]])
 
+        for l in list(table_protocol_M_SS_SV_SO["ImageType"]):
+            print(l)
+            print(json.loads(l))
+        
         table_protocol_M_SS_SV_SO_IT = table_protocol_M_SS_SV_SO[[
             any([True for s in json.loads(l) if s == image_type])
             for l in list(table_protocol_M_SS_SV_SO["ImageType"])
         ]]
 
         print("#" * 40, "table_protocol_M_SS_VS_SO_IT", "#" * 40)
-        print(table_protocol_M_SS_SV_SO_IT[["Protocol", "acq"]])
+        print(table_protocol_M_SS_SV_SO_IT[["Protocol", "acq", "Manufacturer", "ScanningSequence"]])
 
         table_protocols = table_protocol_M_SS_SV_SO_IT
         # print("#"*40, "table_protocol_SS", "#"*40)
@@ -105,3 +111,5 @@ class Tagger:
         
         pos_table_protocol = np.argmin(np.array(matrix).sum(axis=0))
         return table_protocols.iloc[pos_table_protocol][["Protocol", "acq", "task", "ce", "rec", "dir", "part", "folder"]].fillna('')
+
+        [["DERIVED", "PRIMARY", "DIFFUSION", "CALC_BVALUE", "TRACEW", "NORM", "DIS2D", "DFC", "MIX", "MFSPLIT"]["DERIVED", "PRIMARY", "DIFFUSION", "CALC", "BVALUE", "TRACEW", "NORM", "DIS2D", "DFC", "MIX", "M"], ["DERIVED", "PRIMARY", "DIFFUSION", "CALC", "BVALUE", "TRACEW", "NORM", "DIS2D", "MFSPLIT"], ["DERIVED", "PRIMARY", "DIFFUSION", "NONE", "TRACEW", "DIS2D"], ["DERIVED", "PRIMARY", "DIFFUSION", "ADC", "NORM", "DIS2D", "MFSPLIT"], ["DERIVED", "PRIMARY", "DIFFUSION", "ADC", "DIS2D"], ["DERIVED", "PRIMARY", "DIFFUSION", "ADC", "NORM", "DIS2D", "DFC", "MIX", "MFSPLIT"]]
