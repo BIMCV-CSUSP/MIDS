@@ -34,9 +34,7 @@ class LightProcedure(Procedures):
             df_aux = pandas.DataFrame.from_dict(runs_list)
             df_aux.sort_values(by="adquisition_time", inplace = True)
             df_aux.index = numpy.arange(1, len(df_aux) + 1)
-            print(len(df_aux))
             activate_run = True #if len(df_aux) > 1 else False
-            print(f"{activate_run}")
             for index, row in df_aux.iterrows():
                 activate_chunk_partioned = True if len(row['run']) > 1 else False
                 for acq, file_ in enumerate(sorted(row['run'])):
@@ -49,9 +47,7 @@ class LightProcedure(Procedures):
                         activate_run=activate_run, 
                         activate_chunk_partioned=activate_chunk_partioned
                     )
-                    print("-"*79)
-                    print(row["folder_mids"])
-                    print("-"*79)
+                    
                     print("origen:", file_)
                     print("destino:", row["folder_mids"].joinpath(str(dest_file_name) + "".join(file_.suffix)))
                     
@@ -69,13 +65,15 @@ class LightProcedure(Procedures):
         # print(num_part, activate_chunk_partioned)
         sub = subject_name
         ses = key_list[0]
-        rec = f"rec-{key_list[1] if key_list[1] else ''}"
-        run = f"run-{num_run if activate_run else ''}"
-        bp = f"bp-{key_list[4]}" if key_list[4] else ""
-        lat = f"lat-{key_list[2]}" if key_list[2] else ""
-        chunk = f"chunk-{num_part+1 if activate_chunk_partioned else ''}"
+        rec = f"rec-{key_list[1]}" if key_list[1] else ''
+        run = f"run-{num_run}" if activate_run else ''
+        bp = f"bp-{key_list[4]}" if key_list[4] else ''
+        lat = f"lat-{key_list[2]}" if key_list[2] else ''
+        chunk = f"chunk-{num_part+1}" if activate_chunk_partioned else ''
         mod = key_list[3]
         # print(f"{key=}")
         return "_".join([
-            part for part in [sub, ses, rec, run, bp, lat, chunk, mod] if part.split('-')[-1] != ''
+            part for part in [
+                sub, ses, rec, run, bp, lat, chunk, mod
+            ] if part != ''
         ])
