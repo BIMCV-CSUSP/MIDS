@@ -1,5 +1,4 @@
 import re
-
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
@@ -137,7 +136,7 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part, debug_le
                         acquisition_date_time_correct = f"{date[:4]}-{date[4:6]}-{date[6:8]}T{time[:2]}:{time[2:4]}:{time[4:6]}.000"
                     else:
                         if acquisition_date_time == "n/a":
-                            acquisition_date_time_correct = "n/a"
+                            acquisition_date_time_correct = "1500-01-01T12:00:00"
                         else:
                             acquisition_date_time_check = aquisition_date_pattern_comp.search(acquisition_date_time)
                             try:
@@ -180,7 +179,7 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part, debug_le
                             except EmptyDataError as e:
                                 continue
                             procedure_class_mr.control_sequences(
-                                folder_conversion, mids_session_path, session_name, protocol, acq, dir_, folder_BIDS, body_part
+                                folder_conversion, mids_session_path, session_name, dict_json, protocol, acq, dir_, folder_BIDS, acquisition_date_time_correct, body_part
                             )
                     
                     if modality in ["OP", "SC", "XC", "OT", "SM"]:
@@ -224,7 +223,7 @@ scans_header = [
     'EchoTime','InversionTime','SliceTiming','SliceEncodingDirection','FlipAngle'
 ]
 scans_header_micr = ['scan_file','BodyPart','SeriesNumber','AccessionNumber','Manufacturer','ManufacturerModelName','Modality', 'Columns','Rows','PhotometricInterpretation','ImagedVolumeHeight', 'ImagedVolumeHeight']
-scans_header_op = ['scan_file','BodyPart','SeriesNumber','AccessionNumber','Manufacturer','ManufacturerModelName','Modality', 'Columns','Rows','PhotometricInterpretation', 'Laterality']
+scans_header_op = ['scan_file','BodyPart','SeriesNumber','AccessionNumber','Manufacturer','ManufacturerModelName','Modality', 'Columns','Rows','PhotometricInterpretation', 'Laterality', 'note']
 
 def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
     """
@@ -250,8 +249,7 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
             patient_ages = list([])
             patient_sex = None
             adquisition_date_time = None
-            report_path = list(xnat_data_path.glob(f'*{old_subject}/*{old_sesion}/**/*.txt'))
-            
+            report_path = list(xnat_data_path.glob(f'*{old_subject}/*{old_sesion}/**/sr_*.txt'))
             if not report_path:
                 report="n/a"
             else:
@@ -260,6 +258,13 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
                 report = report.replace("\t", "    ")
             list_scan_information = []
             for json_pathfile in session_path.glob('**/*.json'):
+                note_path = json_pathfile.parent.joinpath(json_pathfile.stem + ".txt")
+                note=""
+                if note_path.exists():
+                    with note_path.open('r') as file_:
+                        note = file_.read()
+                #note_path.unlink()
+                #print(note)
                 chunk_search = chunk_pattern_comp.search(json_pathfile.stem)
                 if chunk_search:
                     list_nifties = json_pathfile.parent.glob(
@@ -335,9 +340,9 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
                         except AttributeError as e:
                             print("error de formato:", acquisition_date_time)
                         
-                adquisition_date_time = datetime.fromisoformat(acquisition_date_time_correct)
+                adquisition_date_time = datetime.fromisoformat(acquisition_date_time_correct) if acquisition_date_time_correct != "n/a" else "n/a"
                 # adquisition_date_time = datetime.fromisoformat(json_file[participants_keys[5]].split('T')[0])
-                if patient_birthday != "n/a":
+                if patient_birthday != "n/a" and acquisition_date_time_correct != "n/a":
                     patient_ages.append(int((adquisition_date_time - patient_birthday).days / (365.25)))
 
                 if json_file[participants_keys[1]] == 'MR':
@@ -347,9 +352,10 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
                             for key, value in zip(
                                 scans_header,
                                 [
-                                    str(Path(".").joinpath(*nifti.parts[-2:])),
+                                    str(nifti.relative_to(session_path)),
                                     body_parts[-1], 
-                                    *[json_file.get(key, "n/a") for key in scans_header[2:]]
+                                    *[json_file.get(key, "n/a") for key in scans_header[2:]],
+                                    note
                                 ]
                             )
                         })
@@ -362,7 +368,8 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
                                 [
                                     str(nifti.relative_to(session_path)),
                                     body_parts[-1], 
-                                    *[json_file.get(key, "n/a") for key in scans_header_op[2:]]
+                                    *[json_file.get(key, "n/a") for key in scans_header_op[2:-1]],
+                                    note
                                 ]
                             )
                         })
@@ -375,7 +382,8 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
                                 [
                                     str(nifti.relative_to(session_path)),
                                     body_parts[-1], 
-                                    *[json_file.get(key_, "n/a") for key_ in scans_header_micr[2:]]
+                                    *[json_file.get(key_, "n/a") for key_ in scans_header_micr[2:]],
+                                    note
                                 ]
                             ) 
                         
