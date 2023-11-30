@@ -36,6 +36,8 @@ def dicom2nifti(folder_json):
     folder_nifti.mkdir(parents=True, exist_ok=True)
     dicom2nifti.convert_directory(dicom_path, folder_nifti)
     shutil.copy2(str(folder_json.joinpath("bids.json"), str(folder_nifti.parent)))
+    if folder_json.joinpath("note.txt").exist():
+        shutil.copy2(str(folder_json.joinpath("note.txt"), str(folder_nifti.parent)))
 
 def dicom2niix(folder_json, str_options):
     folder_nifti = folder_json.parent.parent.joinpath("LOCAL_NIFTI", "files")
@@ -79,21 +81,8 @@ def dicom2png(folder_json):
             continue
         sitk.WriteImage(sitk_img, folder_png)
     shutil.copy2(str(folder_json.joinpath("bids.json")), str(folder_png.parent))
-    # if sistema == "Linux":
-    #     subprocess.call(
-    #         f"dcm2niix {str_options} -b o -o {folder_png.parent} {dcm_files[0].parent}",
-    #         shell=True,
-    #         stdout=subprocess.DEVNULL,
-    #         stderr=subprocess.STDOUT
-    #     )
-    # else:
-    #     subprocess.call(
-    #     f"dcm2niix.exe {str_options} -b o -o {folder_png.parent} {dcm_files[0].parent}",
-    #     shell=True,
-    #     stdout=subprocess.DEVNULL,
-    #     stderr=subprocess.STDOUT
-    # )
-    #add_dicom_metadata(dcm_files[0].parent, folder_png.parent)
+    if folder_json.joinpath("note.txt").exists():
+        shutil.copy2(str(folder_json.joinpath("note.txt")), str(folder_png.parent))
     return folder_png.parent
 
 
