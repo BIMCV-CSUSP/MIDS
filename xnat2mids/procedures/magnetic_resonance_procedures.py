@@ -1,12 +1,15 @@
 import shutil
-from shutil import copyfile
-
+import json
+import pandas
 import nibabel as nib
-from xnat2mids.conversion.dicom_converters import dicom2niix
+import numpy
+from shutil import copyfile
+from datetime import datetime
+from xnat2mids.procedures import Procedures
 
 body_part_bids = ['head','brain']
 
-class ProceduresMR:
+class ProceduresMR(Procedures):
     def __init__(self):
         self.reset_indexes()
 
@@ -17,7 +20,7 @@ class ProceduresMR:
 
 
     def control_sequences(
-        self, folder_nifti, mids_session_path, session_name,  protocol, acq, dir_, folder_BIDS, body_part
+        self, folder_nifti, mids_session_path, session_name, dict_json, protocol, acq, dir_, folder_BIDS, acquisition_date_time_correct, body_part
     ):
         
         folder_image_mids = mids_session_path.joinpath(
@@ -29,9 +32,9 @@ class ProceduresMR:
 
 
 
-        self.control_image(folder_nifti, folder_image_mids, session_name, protocol, acq, dir_, body_part)
+        self.control_image(folder_nifti, folder_image_mids, session_name, dict_json, protocol, acq, dir_,acquisition_date_time_correct, body_part)
 
-    def control_image(self, nifti_path, folder_image_mids, session_name, protocol, acq, dir_, body_part):
+    def control_image(self, folder_conversion, folder_image_mids, session_name, dict_json, protocol, acq, dir_, acquisition_date_time_correct, body_part):
 
         """
 
@@ -39,7 +42,7 @@ class ProceduresMR:
 
 
         # Search all nifti files in the old folder and sort them
-        nifti_files = sorted([i for i in nifti_path.glob("*.nii.gz")])
+        nifti_files = sorted([i for i in folder_conversion.glob("*.nii.gz")])
 
         len_nifti_files = len(nifti_files)
         if len_nifti_files == 0: return
@@ -57,38 +60,51 @@ class ProceduresMR:
             )
             for nifti_file in nifti_files
         ]
-        key = str([session_name, acq_label, dir_, bp_label, vp_label, protocol_label])
-        value = self.run_dict.get(key, {"runs":[], "folder_mids": None})
-        value['runs'].append(nifti_files)
-        value['folder_mids'] = folder_image_mids
+        
+        
+        key = json.dumps([session_name, acq_label, dir_, bp_label[0], vp_label, protocol_label])
+        value = self.run_dict.get(key, [])
+        value.append({
+            "run":nifti_files, 
+            "series_number": dict_json.get("SeriesNumber", ), 
+            "adquisition_time":datetime.fromisoformat(acquisition_date_time_correct),
+            "folder_mids": folder_image_mids}
+            )
+        
         self.run_dict[key] = value
 
     def copy_sessions(self, subject_name):
-        for key_str, runs in self.run_dict.items():
-            keys = eval(key_str)
-            print("-"*79)
-            print(keys, runs)
-            print("-" * 79)
+        for key, runs_list in self.run_dict.items():
+            df_aux = pandas.DataFrame.from_dict(runs_list)
+            df_aux.sort_values(by="adquisition_time", inplace = True)
+            df_aux.index = numpy.arange(1, len(df_aux) + 1)
+            activate_run = True #if len(df_aux) > 1 else False
+            for index, row in df_aux.iterrows():
 
-            activate_run = True if len(runs["runs"]) > 1 else False
-            for num_run, run in enumerate(runs["runs"],1):
-
-                activate_nifti_parted = True if len(run) > 1 else False
-                for num_part, partition in enumerate(run,1):
+                activate_chunk_partioned = True if len(row['run']) > 1 else False
+                print("-"*79)
+                for acq, file_ in enumerate(sorted(row['run'])):
 
                     dest_file_name = self.calculate_name(
-                        subject_name, keys, num_run, num_part, activate_run, activate_nifti_parted
+                        subject_name=subject_name, 
+                        keys=key,
+                        num_run=row["series_number"], 
+                        num_part=acq, 
+                        activate_run=activate_run, 
+                        activate_chunk_partioned=activate_chunk_partioned
                     )
-
-                    print("origen:", partition)
-                    print("destino:", runs["folder_mids"].joinpath(str(dest_file_name) + "".join(partition.suffixes)))
-                    shutil.copyfile(partition, runs["folder_mids"].joinpath(str(dest_file_name) + "".join(partition.suffixes)))
-                other_files = [f for f in partition.parent.iterdir() if "".join(partition.suffixes) not in str(f)]
+                    
+                    print("origen:", file_)
+                    print("destino:", row["folder_mids"].joinpath(str(dest_file_name) + "".join(file_.suffix)))
+                    
+                    row["folder_mids"].mkdir(parents=True, exist_ok=True)
+                    shutil.copyfile(file_, row["folder_mids"].joinpath(str(dest_file_name) + "".join(file_.suffixes)))
+                other_files = [f for f in file_.parent.iterdir() if file_.suffix not in str(f) and not f.is_dir()]
                 for other_file in other_files:
                     print("origen:", other_file)
-                    print("destino:", runs["folder_mids"].joinpath(str(dest_file_name) + "".join(other_file.suffixes)))
-                    shutil.copyfile(str(other_file), runs["folder_mids"].joinpath(str(dest_file_name) + "".join(other_file.suffixes)))
-
+                    print("destino:", row["folder_mids"].joinpath(str(dest_file_name) + "".join(other_file.suffixes)))
+                    shutil.copyfile(str(other_file), row["folder_mids"].joinpath(str(dest_file_name) + "".join(other_file.suffixes)))
+                print("-"*79)
     def get_plane_nib(self, nifti):
         """
             Calculate the type of plane with the tag image orientation patient
@@ -99,21 +115,22 @@ class ProceduresMR:
         plane = nib.aff2axcodes(img.affine)[2]
         return "ax" if plane in ["S", "I"] else "sag" if plane in ["R", "L"] else "cor"
 
-    def calculate_name(self, subject_name, keys, num_run, num_part, activate_run, activate_acq_partioned):
-        print(num_part, activate_acq_partioned)
-        acq = f"{keys[1] if keys[1] else ''}"
-        chunk = f"{num_part if activate_acq_partioned else ''}"
-        print(f"{keys}")
+    def calculate_name(self, subject_name, keys, num_run, num_part, activate_run, activate_chunk_partioned):
+
+        key_list = json.loads(keys)
+        sub = subject_name
+        ses = key_list[0]
+        acq = f"acq-{key_list[1]}" if key_list[1] else ''
+        dir_ = f"dir-{key_list[2]}" if key_list[2] else ''
+        run = f"run-{num_run}" if activate_run else ''
+        chunk = f"chunk-{num_part+1}" if activate_chunk_partioned else ''
+        bp = '' if key_list[3].lower() in body_part_bids else f'bp-{key_list[3].lower()}'
+        lat = ''
+        vp = '' if key_list[3].lower() in body_part_bids else f'vp-{key_list[4][num_part-1]}'
+        mod = key_list[5]
+        
         return "_".join([
             part for part in [
-                subject_name,
-                keys[0],
-                f'acq-{acq}' if acq else '',
-                f'dir-{keys[2]}' if keys[2] else '',
-                f'run-{num_run}' if activate_run else '',
-                (f'chunk-{chunk}') if activate_acq_partioned else '',
-                '' if keys[3].lower() in body_part_bids else f'bp-{keys[3].lower()}',
-                f'desc-{keys[4][num_part-1]}' if keys[3].lower() in body_part_bids else f'vp-{keys[4][num_part-1]}',
-                keys[5]
+                sub, ses, acq, dir_, run, chunk, bp, lat, vp, mod
             ] if part != ''
         ])
