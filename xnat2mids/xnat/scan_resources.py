@@ -89,10 +89,11 @@ class ScanResources(dict):
         if not self.is_metadata_saved:
             self.is_metadata_saved = True
             self.store_metadata(dicom_path, dicom_path_metadata.format("DICOM"))
-
-        if "note" in self.keys():
-            with open(dicom_path_note, 'wb') as dicom_file:
-                dicom_file.write(self["note"])
+        print(format_message(self.level_verbose+10, self.level_tab, self["scan"]), end="\n", flush=True)
+        if "note" in self["scan"].keys():
+            with open(dicom_path_note, 'w') as dicom_file:
+                dicom_file.write(self["scan"]["note"])
+        
     def download_nifti(self, path_download, filename, overwrite=False, verbose=False):
         complet_path = path_download.joinpath(dict_paths["path_download"](
             self["scan"]["session"]["subject"]["label"],
@@ -206,11 +207,11 @@ class ScanResources(dict):
                     path_download, file_obj["Name"], overwrite=overwrite, verbose=verbose
                 )
 
-            if self["label"] in  ["NIFTI", "BIDS"]:
-                print(format_message(self.level_verbose + 1, self.level_tab + 1, f"{index} of {self['file_count']}"),
-                      end="",
-                      flush=True)
-                self.download_nifti(path_download, file_obj["Name"], overwrite=overwrite, verbose=verbose)
+            # if self["label"] in  ["NIFTI", "BIDS"]:
+            #     print(format_message(self.level_verbose + 1, self.level_tab + 1, f"{index} of {self['file_count']}"),
+            #           end="",
+            #           flush=True)
+            #     self.download_nifti(path_download, file_obj["Name"], overwrite=overwrite, verbose=verbose)
 
             #if self["label"] == "PNG":
             #    self.download_png(path_download, file_obj["Name"], overwrite=overwrite, verbose=verbose)
