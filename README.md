@@ -1,13 +1,12 @@
 
 <div class="clearfix" style="padding: 0px; padding-left: 100px; display: flex; flex-wrap: nowrap; justify-content: space-evenly; align-items:center">
-<a href="http://bimcv.cipf.es/"><img src="https://github.com/jomasator2/MIDS/blob/main/images/Logo_UMIB.png" width="330px" style="display: inline-block; "></a><a href="http://fisabio.san.gva.es/"><img src="https://github.com/jomasator2/MIDS/blob/main/images/logo_fisabio.png" width="230px" class="pull-right" style="display: inline-block;"></a><a href="https://san.gva.es/"><img src="https://github.com/jomasator2/MIDS/blob/main/images/logo_gva.png" width="280px" class="center-block" style=" display: inline-block;"></a>
+<a href="http://bimcv.cipf.es/"><img src="https://github.com/jomasator2/MIDS/blob/main/images/Logo_UMIB.png" width="300px" style="display: inline-block; "></a><a href="http://fisabio.san.gva.es/"><img src="https://github.com/jomasator2/MIDS/blob/main/images/logo_fisabio.png" width="330px" class="pull-right" style="display: inline-block;"></a><a href="https://san.gva.es/"><img src="https://github.com/jomasator2/MIDS/blob/main/images/logo_gva.png" width="200px" class="center-block" style=" display: inline-block;"></a>
 </div>
 <br></br>
 
 <center> <h1>Medical Imaging Bank Valencia Region 1</h1> </center>
 <!--<h1 style="text-align:center">Medical Imaging Bank Valencia Region</h1>-->
 <h2 style="text-align:center">Medical Imaging Data Structure</h2>
-<h2 style="text-align:center">BIDS Extension Proposal xx (BEP0xx)</h2>
 
 <p style="text-align:justify">
 In order to add to the scientific knowledge, methods that yield reliable and reproducible results must be used.
@@ -89,11 +88,6 @@ An example of execution is:
 ```sh
 python3 -m xnat2mids -i DIR_TO_SAVE -w XNAT_WEB -u USER -b BODYPART -v
 ```
-### Software required 
-
-To run this software it is necessary to use **dcm2niix** for conversion and metadata extraction, this is achieved by downloading the compiled software for the operating system you are using from [github releases](https://github.com/rordenlab/dcm2niix/releases). 
-
-For proper use, the compiled file should be left in the root folder of this project. On Linux systems it is also possible to install this software on the system without downloading the compiled file.
 
 ### Options
 
