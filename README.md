@@ -1,6 +1,6 @@
 
 <div class="clearfix" style="padding: 0px; padding-left: 100px; display: flex; flex-wrap: nowrap; justify-content: space-evenly; align-items:center">
-<a href="http://bimcv.cipf.es/"><img src="https://github.com/BIMCV-CSUSP/MIDS/blob/master/images/logotipo-fisabio_tauv.png?raw=true" width="330px" style="display: inline-block; "></a><a href="http://ceib.san.gva.es"><img src="https://github.com/BIMCV-CSUSP/MIDS/blob/master/images/logo_CEIB.png?raw=true" width="230px" class="pull-right" style="display: inline-block;"></a><a href="http://www.eurobioimaging.eu/"><img src="http://www.eurobioimaging.eu/sites/all/themes/eurobio/images/euro_bio_imaging_logo.jpg" width="280px" class="center-block" style=" display: inline-block;"></a>
+<a href="http://bimcv.cipf.es/"><img src="https://github.com/jomasator2/MIDS/blob/main/images/Logo_UMIB.png" width="330px" style="display: inline-block; "></a><a href="http://fisabio.san.gva.es/"><img src="https://github.com/jomasator2/MIDS/blob/main/images/logo_fisabio.png" width="230px" class="pull-right" style="display: inline-block;"></a><a href="https://san.gva.es/"><img src="https://github.com/jomasator2/MIDS/blob/main/images/logo_gva.png" width="280px" class="center-block" style=" display: inline-block;"></a>
 </div>
 <br></br>
 
