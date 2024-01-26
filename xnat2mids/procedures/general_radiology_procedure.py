@@ -39,22 +39,34 @@ class RadiologyProcedure(Procedures):
     def reset_indexes(self):
         self.run_dict = {}
 
-    def control_image(self, folder_conversion, mids_session_path, dict_json, session_name, modality, acquisition_date_time):
-        png_files = sorted([i for i in folder_conversion.glob("*.png")])
+    def control_image(
+                        self, 
+                        folder_conversion, 
+                        mids_session_path,
+                        dict_json, 
+                        session_name, 
+                        modality_,
+                        laterality,
+                        acquisition_date_time, 
+                        body_part
+                    ):
+        png_files = [i for i in folder_conversion.glob("*.png")]
         #nifti_files = sorted([i for i in folder_conversion.glob("*.nii*")])
-        mim = modality if body_part.lower in[ "head", "brain"] else "mim-rx"
+        #mim = modality if body_part.lower in[ "head", "brain"] else "mim-rx"
         laterality = dict_json.get("Laterality")
-        view_position = dict_json.get("Laterality")
+        view_position = dict_json.get("ViewPosition")
         len_files = len(png_files)
         if not len_files: return
 
-        key = json.dumps([session_name, rec, laterality, protocol])
+        key = json.dumps([session_name, body_part, laterality, view_position, modality_])
         value = self.run_dict.get(key, [])
         value.append({
-            "run":png_files, 
+            "run":png_files,
+            "series_number": dict_json.get("SeriesNumber"),
             "adquisition_time":datetime.fromisoformat(acquisition_date_time), 
-            "folder_mids": mids_session_path.joinpath(mim)})
+            "folder_mids": mids_session_path})
         self.run_dict[key]=value
+        
         
 
     def copy_sessions(self, subject_name):
@@ -63,19 +75,19 @@ class RadiologyProcedure(Procedures):
             df_aux.sort_values(by="adquisition_time", inplace = True)
             df_aux.index = numpy.arange(1, len(df_aux) + 1)
             print(len(df_aux))
-            activate_run = True if len(df_aux) > 1 else False
+            activate_run = True #if len(df_aux) > 1 else False
             print(f"{activate_run}")
             for index, row in df_aux.iterrows():
-                activate_acq_partioned = True if len(row['run']) > 1 else False
+                activate_chunk_partioned = True if len(row['run']) > 1 else False
                 for acq, file_ in enumerate(sorted(row['run'])):
                 
                     dest_file_name = self.calculate_name(
                         subject_name=subject_name, 
                         key=key,
-                        num_run=index, 
+                        num_run=row["series_number"], 
                         num_part=acq, 
                         activate_run=activate_run, 
-                        activate_acq_partioned=activate_acq_partioned
+                        activate_chunk_partioned=activate_chunk_partioned
                     )
                     print("-"*79)
                     print(row["folder_mids"])
@@ -91,68 +103,23 @@ class RadiologyProcedure(Procedures):
                     print("destino:", row["folder_mids"].joinpath(str(dest_file_name) + "".join(other_file.suffixes)))
                     shutil.copyfile(str(other_file), row["folder_mids"].joinpath(str(dest_file_name) + "".join(other_file.suffixes)))
 
-    def calculate_name(self, subject_name, key, num_run, num_part, activate_run, activate_acq_partioned):
+    def calculate_name(self, subject_name, key, num_run, num_part, activate_run, activate_chunk_partioned):
         key_list = json.loads(key)
         print(key_list)
-        # print(num_part, activate_acq_partioned)
-        
-        rec = f"{key_list[1] if key_list[1] else ''}"
-        chunk = f"{num_part+1 if activate_acq_partioned else ''}"
-        run = f"{num_run if activate_run else ''}"
-        print(f"{run}")
-        # print(f"{key=}")
+        # print(num_part, activate_chunk_partioned)
+        sub = subject_name
+        ses = key_list[0]
+        #rec = f"rec-{key_list[1]}" if key_list[1] else ''
+        run = f"run-{num_run}" if activate_run else ''
+        bp = f"bp-{key_list[1].lower()}" if key_list[1] else ''
+        lat = f"lat-{key_list[2].lower()}" if key_list[2] else ''
+        vp = f"vp-{key_list[3].lower()}" if key_list[3] else ''
+        chunk = f"chunk-{num_part+1}" if activate_chunk_partioned else ''
+        mod = key_list[4].lower()
+        print(f"{key=}")
         return "_".join([
             part for part in [
-                subject_name,
-                key_list[0],
-                f"acq-{key_list[2]}" if key_list[2] else "",
-                f"rec-{rec}",
-                f'run-{run}',
-                (f'chunk-{chunk}') if activate_acq_partioned else '',
-                key_list[3]
-            ] if part.split('-')[-1] != ''
+                sub, ses, run, bp, lat, vp, chunk, mod
+            ] if part != ''
         ])
-    
-
-    def procedure(
-            self, department_id, subject_id, session_id, body_part,
-            view_position, dicom_modality):
-        """
-            Function that copies the elements to the CR images of
-            the mids.
-        """
-        nifti_files = sorted([str(i) for i in Path('/'.join(str(json_path).split('/')[:-4])).glob("**/*.png")])
-        len_nifti_files = len(nifti_files)
-        new_path_mids = self.get_mids_path(mids_path=department_id)
-
-        os.makedirs(new_path_mids)
-        for num, nifti_file in enumerate(nifti_files):
-            nii_name =self.get_name(
-                subject_id=subject_id,
-                session_id=session_id,
-                acq_index=acq_index,
-                run_index=str(self.dict_indexes[scan][view_position]),
-                len_nifti_files=len_nifti_files,
-                body_part=body_part,
-                view_position=view_position,
-                scan=dicom_modality,
-                ext=".nii.gz" if dicom_modality=="cr" else ".png"
-            )
-            # copy the nifti file in the new path
-            copyfile(nifti_file, str(new_path_mids.joinpath(nii_name)))
-
-        json_name = self.get_name(
-            subject_id=subject_id,
-            session_id=session_id,
-            acq_index=acq_index,
-            run_index=str(self.dict_indexes[scan][iop]),
-            len_nifti_files=len_nifti_files,
-            body_part=body_part,
-            view_position=view_position,
-            scan="cr",
-            ext=".json"
-        )
-        copyfile(str(dicom_json), str(new_path_mids.joinpath(json_name)))
-
-
    
