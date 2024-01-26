@@ -342,7 +342,7 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
                 acquisition_date = json_file.get("AcquisitionDate", "n/a")
                 acquisition_time = json_file.get("AcquisitionTime", "n/a")
 
-                if (acquisition_date != "n/a") and acquisition_time != "n/a":
+                if not (acquisition_date == "n/a" or acquisition_time == "n/a"):
                     date = str(acquisition_date)
                     time = str(acquisition_time)
                     acquisition_date_time_correct = f"{date[:4]}-{date[4:6]}-{date[6:8]}T{time[:2]}:{time[2:4]}:{time[4:6]}.000"
@@ -438,7 +438,7 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
                  key:value
                  for key, value in zip(
                     session_header,
-                    [session, accesion_number, str(adquisition_date_time), report]
+                    [session, accesion_number, str(acquisition_date_time), report]
                  )
 
             })
