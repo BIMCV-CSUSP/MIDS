@@ -23,7 +23,7 @@ class LightProcedure(Procedures):
         print(acquisition_date_time)
         value.append({
             "run":png_files, 
-            "series_number": dict_json.get("SeriesNumber", ),
+            "series_number": dict_json.get("SeriesNumber"),
             "adquisition_time":datetime.fromisoformat(acquisition_date_time), 
             "folder_mids": mids_session_path})
         self.run_dict[key]=value
