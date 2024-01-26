@@ -9,10 +9,11 @@ from xnat2mids.procedures.magnetic_resonance_procedures import ProceduresMR
 from xnat2mids.procedures.light_procedures import LightProcedure
 from xnat2mids.procedures.general_radiology_procedure import RadiologyProcedure
 from xnat2mids.protocols.scans_tagger import Tagger
-from xnat2mids.conversion.dicom_converters import dicom2niix
+from xnat2mids.conversion.dicom_converters import dicom2nifti
 from xnat2mids.conversion.dicom_converters import dicom2png
 from tqdm import tqdm
 from pandas.errors import EmptyDataError
+import logging
 ##1003-2-4T02:23:43.3245
 ##20231212020401.23452
 adquisition_date_pattern_2 = r"(?P<fecha1>(?P<year>\d{4})-(?P<month>\d+)-(?P<day>\d+)T(?P<hour>\d+):(?P<minutes>\d+):(?P<seconds>\d+).(?P<ms>\d+))|(?P<fecha2>(?P<year2>\d{4})(?P<month2>\d{2})(?P<day2>\d{2})(?P<hour2>\d{2})(?P<minutes2>\d{2})(?P<seconds2>\d{2}).(?P<ms2>\d+))"
@@ -20,6 +21,7 @@ adquisition_date_pattern = r"(?P<year>\d+)-(?P<month>\d+)-(?P<day>\d+)T(?P<hour>
 subses_pattern = r"[A-z]+(?P<prefix_sub>\d*)?(_S)(?P<suffix_sub>\d+)(\\|/)[A-z]+\-?[A-z]*(?P<prefix_ses>\d*)?(_E)(?P<suffix_ses>\d+)"
 prostate_pattern = r"(?:(?:(?:diff?|dwi)(?:\W|_)(?:.*)(?:b\d+))|dif 2000)|(?:adc|Apparent)|prop|blade|fse|tse|^ax T2$"
 chunk_pattern = r"_chunk-(?P<chunk>\d)+"
+
 aquisition_date_pattern_comp = re.compile(adquisition_date_pattern_2)
 prostate_pattern_comp = re.compile(prostate_pattern, re.I)
 chunk_pattern_comp = re.compile(chunk_pattern)
@@ -34,6 +36,7 @@ dict_keys = {
 
 dict_mr_keys = {
     'Manufacturer': '00080070',
+    'ManufacturerModelName': '00081090',
     'ScanningSequence': '00180020',
     'SequenceVariant': '00180021',
     'ScanOptions': '00180022',
@@ -50,7 +53,7 @@ dict_mr_keys = {
 BIOFACE_PROTOCOL_NAMES = [
     '3D-T2-FLAIR SAG',
     '3D-T2-FLAIR SAG NUEVO-1',
-    'AAhead_scout',
+    #'AAhead_scout',
     'ADVANCED_ASL',
     'AXIAL T2 TSE FS',
     'AX_T2_STAR',
@@ -96,14 +99,28 @@ LUMBAR_PROTOCOLS_ACEPTED = {
 options_dcm2niix = "-w 0 -i n -m y -ba n -f %x_%s -z y -g y"
 
 def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part, debug_level):
+    # if debug_level == 3:
+    #     pass
+            # # Set up logging configuration
+            # logging.basicConfig(filename='logfile_MIDS.log', level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
+            # # Create a logger
+            # logger_MIDS = logging.getLogger("MIDS")
+
+    with Path('logfile_MIDS.log').open("w") as file_:
+        file_.write("")
+
+
     procedure_class_mr = ProceduresMR()
     procedure_class_light = LightProcedure()
     procedure_class_radiology = RadiologyProcedure()
     for subject_xnat_path in tqdm(xnat_data_path.iterdir()):
+        print(f"{subject_xnat_path.name=}")
         procedure_class_mr.reset_indexes()
         procedure_class_light.reset_indexes()
         procedure_class_radiology.reset_indexes()
         for sessions_xnat_path in subject_xnat_path.iterdir():
+            print(f"\t{sessions_xnat_path.name=}")
             findings = re.search(subses_pattern, str(sessions_xnat_path), re.X)
             subject_name = f"sub-{subject_xnat_path.stem}" 
             session_name = f"ses-{sessions_xnat_path.stem}" 
@@ -113,7 +130,7 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part, debug_le
             
             tagger = Tagger()
             tagger.load_table_protocol(
-                './xnat2mids/protocols/protocol_RM_prostate_new.tsv'
+                './xnat2mids/protocols/protocol_RM_brain_new.tsv'
             )
             if not sessions_xnat_path.joinpath("scans").exists(): continue
             for scans_path in sessions_xnat_path.joinpath("scans").iterdir():
@@ -124,7 +141,7 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part, debug_le
                     series_description = dict_json.get("SeriesDescription", "n/a")
                     Protocol_name = dict_json.get("ProtocolName", "n/a")
                     image_type = dict_json.get("ImageType", "n/a")
-                    body_part = dict_json.get("BodyPartExamined", body_part)
+                    body_part = dict_json.get("BodyPartExamined", body_part).lower()
                     acquisition_date_time = dict_json.get("AcquisitionDateTime", "n/a")
                     acquisition_date = dict_json.get("AcquisitionDate", "n/a")
                     acquisition_time = dict_json.get("AcquisitionTime", "n/a")
@@ -164,24 +181,27 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part, debug_le
                                 print("error de formato:", acquisition_date_time)
                     if modality == "MR":
                         #convert data to nifti
-                        folder_conversion = dicom2niix(path_dicoms, options_dcm2niix+ " -b y")
+                        folder_conversion = dicom2nifti(path_dicoms)
                         # via BIDS protocols
-                        searched_prost = prostate_pattern_comp.search(series_description)
-                        if searched_prost and "tracew" not in series_description.lower():
-
-                            print(f"series_description: {series_description}")
-                            json_adquisitions = {
-                                f'{k}': dict_json.get(k, -1) for k in dict_mr_keys.keys()
-                            }
-                            try:
-                                protocol, acq, task, ce, rec, dir_, part, folder_BIDS = tagger.classification_by_min_max(json_adquisitions)
-                                
-                            except EmptyDataError as e:
-                                continue
-                            procedure_class_mr.control_sequences(
-                                folder_conversion, mids_session_path, session_name, dict_json, protocol, acq, dir_, folder_BIDS, acquisition_date_time_correct, body_part
-                            )
+                        #searched_prost = prostate_pattern_comp.search(series_description)
+                        #if searched_prost and "tracew" not in series_description.lower():
+                        #if series_description in BIOFACE_PROTOCOL_NAMES:
+                        print(f"series_description: {series_description}")
+                        json_adquisitions = {
+                            f'{k}': dict_json.get(k, -1) for k in dict_mr_keys.keys()
+                        }
+                        try:
+                            protocol, acq, task, ce, rec, dir_, part, folder_BIDS = tagger.classification_by_min_max(json_adquisitions)
+                            
+                        except EmptyDataError as e:
+                            continue
+                        procedure_class_mr.control_sequences(
+                            folder_conversion, mids_session_path, session_name, dict_json, protocol, acq, dir_, folder_BIDS, acquisition_date_time_correct, body_part
+                        )
                     
+                        with Path('logfile_MIDS.log').open("a") as file_:
+                            file_.write(f"{series_description}--->{(protocol, acq, task, ce, rec, dir_, part, folder_BIDS)}\n\t{path_dicoms}\n")
+                        
                     if modality in ["OP", "SC", "XC", "OT", "SM"]:
                         
                         
@@ -189,27 +209,41 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part, debug_le
                         modality_, mim= (("op", "mim-ligth/op") if modality in ["OP", "SC", "XC", "OT"] else ("BF", "micr"))
                         laterality = dict_json.get("Laterality")
                         acq = "" if "ORIGINAL" in image_type else "opacitysubstract"
-                        procedure_class_light.control_image(folder_conversion, mids_session_path.joinpath(mim), dict_json, session_name, modality_, acq, laterality, acquisition_date_time_correct, body_part)
+                        procedure_class_light.control_image(
+                            folder_conversion, 
+                            mids_session_path.joinpath(mim), 
+                            dict_json, 
+                            session_name, 
+                            modality_,
+                            acq, 
+                            laterality, 
+                            acquisition_date_time_correct, 
+                            body_part)
                     
                     if modality in ["CR", "DX"]:
                         try:
-                            folder_conversion = dicom2png(path_dicoms, options_dcm2niix) #.joinpath("resources")
+                            folder_conversion = dicom2png(path_dicoms) #.joinpath("resources")
                         except RuntimeError as e:
                             continue
-                        modality_ = modality.lower()
+                        modality_, mim= ((modality, f"mim-ligth/{modality.lower()}"))
+                        laterality = dict_json.get("Laterality")
                         procedure_class_radiology.control_image(
-                            folder_conversion,
-                            mids_session_path,
-                            dict_json,
-                            session_name,
+                            folder_conversion, 
+                            mids_session_path.joinpath(mim), 
+                            dict_json, 
+                            session_name, 
                             modality_,
-                            acquisition_date_time_correct
+                            laterality,
+                            acquisition_date_time_correct, 
+                            body_part
                         )
                     
-        if debug_level == 3: continue
+        if debug_level == 3: 
+            continue
+        print(f"copy sessions of {subject_name=}")
         procedure_class_mr.copy_sessions(subject_name)
         procedure_class_light.copy_sessions(subject_name)
-
+        procedure_class_radiology.copy_sessions(subject_name)
 
 participants_header = ['participant_id', 'participant_pseudo_id', 'modalities', 'body_parts', 'patient_birthday', 'age', 'gender']
 participants_keys = ['PatientID','Modality', 'BodyPartExamined', 'PatientBirthDate', 'PatientSex', 'AcquisitionDateTime']
@@ -233,22 +267,24 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
     
     list_information= []
     for subject_path in mids_data_path.glob('*/'):
+        print(subject_path.name)
         if not subject_path.match("sub-*"): continue
         subject = subject_path.parts[-1]
         old_subject =subject.split("-")[-1]
         list_sessions_information = []
+        modalities = []
+        body_parts = []
+        patient_birthday = None
+        patient_ages = list([])
+        patient_sex = None
+        adquisition_date_time = None
         for session_path in subject_path.glob('*/'):
             if not session_path.match("ses-*"): continue
             session = session_path.parts[-1]
             
             old_sesion = session.split("-")[-1]
             
-            modalities = []
-            body_parts = []
-            patient_birthday = None
-            patient_ages = list([])
-            patient_sex = None
-            adquisition_date_time = None
+            
             report_path = list(xnat_data_path.glob(f'*{old_subject}/*{old_sesion}/**/sr_*.txt'))
             if not report_path:
                 report="n/a"
@@ -263,7 +299,7 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
                 if note_path.exists():
                     with note_path.open('r') as file_:
                         note = file_.read()
-                #note_path.unlink()
+                    note_path.unlink()
                 #print(note)
                 chunk_search = chunk_pattern_comp.search(json_pathfile.stem)
                 if chunk_search:
@@ -297,6 +333,7 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
                         patient_birthday = datetime.fromisoformat(correct_birtday)
                     else:
                         patient_birthday = "n/a"
+                print(f"{patient_birthday=}, {patient_birthday.date()=}")
                 try:
                     patient_sex = json_file[participants_keys[4]]
                 except KeyError as e:
@@ -340,10 +377,10 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
                         except AttributeError as e:
                             print("error de formato:", acquisition_date_time)
                         
-                adquisition_date_time = datetime.fromisoformat(acquisition_date_time_correct) if acquisition_date_time_correct != "n/a" else "n/a"
+                acquisition_date_time = datetime.fromisoformat(acquisition_date_time_correct) if acquisition_date_time_correct != "n/a" else "n/a"
                 # adquisition_date_time = datetime.fromisoformat(json_file[participants_keys[5]].split('T')[0])
-                if patient_birthday != "n/a" and acquisition_date_time_correct != "n/a":
-                    patient_ages.append(int((adquisition_date_time - patient_birthday).days / (365.25)))
+                if patient_birthday != "n/a" and acquisition_date_time != "n/a":
+                    patient_ages.append(int((acquisition_date_time - patient_birthday).days / (365.25)))
 
                 if json_file[participants_keys[1]] == 'MR':
                     for nifti in list_nifties:
@@ -411,6 +448,7 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
         pandas.DataFrame.from_dict(list_sessions_information).to_csv(
             subject_path.joinpath(f"{subject}_sessions.tsv"), sep="\t", index=False
         )
+        print(f"{patient_birthday=}")
         list_information.append({
             key:value
             for key, value in zip(
