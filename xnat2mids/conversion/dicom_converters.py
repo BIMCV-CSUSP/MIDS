@@ -5,7 +5,7 @@ import json
 import pydicom
 import shutil
 import platform
-import dicom2nifti
+import dicom2nifti as d2n
 from xnat2mids.conversion.io_json import load_json, save_json
 sistema = platform.system()
 # def sitk_dicom2mifti(dicom_path):
@@ -32,12 +32,14 @@ sistema = platform.system()
 #     return array_nifty
 
 def dicom2nifti(folder_json):
-    folder_nifti = folder_json.parent.parent.joinpath("LOCAL_NIFTI", "files", "nifti_image.nii.gz")
+    folder_nifti = folder_json.parent.parent.joinpath("LOCAL_NIFTI", "files")
     folder_nifti.mkdir(parents=True, exist_ok=True)
-    dicom2nifti.convert_directory(dicom_path, folder_nifti)
-    shutil.copy2(str(folder_json.joinpath("bids.json"), str(folder_nifti.parent)))
-    if folder_json.joinpath("note.txt").exist():
-        shutil.copy2(str(folder_json.joinpath("note.txt"), str(folder_nifti.parent)))
+    d2n.convert_directory(str(folder_json), str(folder_nifti))
+    shutil.copy2(str(folder_json.joinpath("bids.json")), str(folder_nifti))
+    
+    if folder_json.joinpath("note.txt").exists() and folder_json.joinpath("note.txt").stat().st_size == 0:
+        shutil.copy2(str(folder_json.joinpath("note.txt")), str(folder_nifti))
+    return folder_nifti
 
 def dicom2niix(folder_json, str_options):
     folder_nifti = folder_json.parent.parent.joinpath("LOCAL_NIFTI", "files")
