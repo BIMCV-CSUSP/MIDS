@@ -234,7 +234,7 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part, debug_le
                             folder_conversion = dicom2png(path_dicoms) #.joinpath("resources")
                         except RuntimeError as e:
                             continue
-                        modality_, mim= ((modality, f"mim-ligth/{modality.lower()}"))
+                        modality_, mim= ((modality, f"mim-light/{modality.lower()}"))
                         laterality = dict_json.get("Laterality")
                         procedure_class_radiology.control_image(
                             folder_conversion, 
