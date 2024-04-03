@@ -19,7 +19,7 @@ import logging
 adquisition_date_pattern_2 = r"(?P<fecha1>(?P<year>\d{4})-(?P<month>\d+)-(?P<day>\d+)T(?P<hour>\d+):(?P<minutes>\d+):(?P<seconds>\d+).(?P<ms>\d+))|(?P<fecha2>(?P<year2>\d{4})(?P<month2>\d{2})(?P<day2>\d{2})(?P<hour2>\d{2})(?P<minutes2>\d{2})(?P<seconds2>\d{2}).(?P<ms2>\d+))"
 adquisition_date_pattern = r"(?P<year>\d+)-(?P<month>\d+)-(?P<day>\d+)T(?P<hour>\d+):(?P<minutes>\d+):(?P<seconds>\d+).(?P<ms>\d+)"
 subses_pattern = r"[A-z]+(?P<prefix_sub>\d*)?(_S)(?P<suffix_sub>\d+)(\\|/)[A-z]+\-?[A-z]*(?P<prefix_ses>\d*)?(_E)(?P<suffix_ses>\d+)"
-prostate_pattern = r"(?:(?:(?:diff?|dwi)(?:\W|_)(?:.*)(?:b\d+))|dif 2000)|(?:adc|Apparent)|prop|blade|fse|tse|^ax T2$"
+prostate_pattern = r"(?:(?:(?:diff?|dwi)(?:\W|_)(?:.*)(?:b\d+))|dif 1500)|stir|(?:adc|Apparent)|prop|blade|fse|tse|^ax T2$"
 chunk_pattern = r"_chunk-(?P<chunk>\d)+"
 
 aquisition_date_pattern_comp = re.compile(adquisition_date_pattern_2)
@@ -48,6 +48,7 @@ dict_mr_keys = {
     'FlipAngle': '00181314',
     'EchoTime': '00180081',
     'SliceThickness': '00180050',
+    'SeriesDescription': '0008103E',
 }
 
 BIOFACE_PROTOCOL_NAMES = [
@@ -130,7 +131,7 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part, debug_le
             
             tagger = Tagger()
             tagger.load_table_protocol(
-                './xnat2mids/protocols/protocol_RM_brain_new.tsv'
+                './xnat2mids/protocols/protocol_RM_prostate_train.tsv'
             )
             if not sessions_xnat_path.joinpath("scans").exists(): continue
             for scans_path in sessions_xnat_path.joinpath("scans").iterdir():
@@ -181,32 +182,40 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part, debug_le
                                 print("error de formato:", acquisition_date_time)
                     if modality == "MR":
                         #convert data to nifti
+                        #if series_description not in BIOFACE_PROTOCOL_NAMES: continue
                         folder_conversion = dicom2nifti(path_dicoms)
                         # via BIDS protocols
-                        #searched_prost = prostate_pattern_comp.search(series_description)
-                        #if searched_prost and "tracew" not in series_description.lower():
-                        #if series_description in BIOFACE_PROTOCOL_NAMES:
-                        print(f"series_description: {series_description}")
-                        json_adquisitions = {
-                            f'{k}': dict_json.get(k, -1) for k in dict_mr_keys.keys()
-                        }
-                        try:
-                            protocol, acq, task, ce, rec, dir_, part, folder_BIDS = tagger.classification_by_min_max(json_adquisitions)
-                            
-                        except EmptyDataError as e:
-                            continue
-                        procedure_class_mr.control_sequences(
-                            folder_conversion, mids_session_path, session_name, dict_json, protocol, acq, dir_, folder_BIDS, acquisition_date_time_correct, body_part
-                        )
-                    
-                        with Path('logfile_MIDS.log').open("a") as file_:
-                            file_.write(f"{series_description}--->{(protocol, acq, task, ce, rec, dir_, part, folder_BIDS)}\n\t{path_dicoms}\n")
+                        searched_prost = prostate_pattern_comp.search(series_description)
+                        if searched_prost and "tracew" not in series_description.lower():
+
+                            print(f"series_description: {series_description}")
+                            json_adquisitions = {
+                                f'{k}': dict_json.get(k, -1) for k in dict_mr_keys.keys()
+                            }
+                            try:
+                                protocol, acq, task, ce, rec, dir_, part, folder_BIDS = tagger.classification_by_min_max(json_adquisitions)
+                                print(f"{protocol=}, {acq=}, {task=}, {ce=}, {rec=}, {dir_=}, {part=}, {folder_BIDS=}")
+                                if protocol == "n/a":
+                                    raise EmptyDataError("protocol is n/a")
+                            except EmptyDataError as e:
+                                print(f"EmptyDataError: {e}")
+                                #print(f"{protocol=}, {acq=}, {task=}, {ce=}, {rec=}, {dir_=}, {part=}, {folder_BIDS=}")
+                                continue
+                            except KeyError as e:
+                                print(f"KeyError: {e}")
+                                continue
+                            procedure_class_mr.control_sequences(
+                                folder_conversion, mids_session_path, session_name, dict_json, protocol, acq, dir_, folder_BIDS, acquisition_date_time_correct, body_part
+                            )
                         
-                    if modality in ["OP", "SC", "XC", "OT", "SM"]:
+                            with Path('logfile_MIDS.log').open("a") as file_:
+                                file_.write(f"{series_description}--->{(protocol, acq, task, ce, rec, dir_, part, folder_BIDS)}\n\t{path_dicoms}\n")
+                            
+                    if modality in ["OP", "SC", "XC", "OT", "SM", "BF"]:
                         
                         
                         folder_conversion = dicom2png(path_dicoms) #.joinpath("resources")
-                        modality_, mim= (("op", "mim-ligth/op") if modality in ["OP", "SC", "XC", "OT"] else ("BF", "micr"))
+                        modality_, mim= (("op", "mim-light/op") if modality in ["OP", "SC", "XC", "OT"] else ("BF", "micr"))
                         laterality = dict_json.get("Laterality")
                         acq = "" if "ORIGINAL" in image_type else "opacitysubstract"
                         procedure_class_light.control_image(
@@ -300,7 +309,13 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
                     with note_path.open('r') as file_:
                         note = file_.read()
                     note_path.unlink()
-                #print(note)
+                    if not note:
+                        print(f"empty note: {note_path}")
+                        #raise FileNotFoundError
+                else: 
+                    print(f"not found: {note_path}")
+                    #raise FileNotFoundError
+                print(note)
                 chunk_search = chunk_pattern_comp.search(json_pathfile.stem)
                 if chunk_search:
                     list_nifties = json_pathfile.parent.glob(
@@ -315,7 +330,9 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
                     )
                 
                 list_nifties = [f for f in list_nifties if ".json" not in f.suffixes]
+                print(json_pathfile)
                 json_file = load_json(json_pathfile)
+                print(json_file)
                 pseudo_id = json_file[participants_keys[0]]
                 modalities.append(json_file[participants_keys[1]])
                 try:
@@ -339,46 +356,20 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
                 except KeyError as e:
                     patient_sex = "n/a"
                 acquisition_date_time = json_file.get("AcquisitionDateTime", "n/a")
-                acquisition_date = json_file.get("AcquisitionDate", "n/a")
-                acquisition_time = json_file.get("AcquisitionTime", "n/a")
-
-                if not (acquisition_date == "n/a" or acquisition_time == "n/a"):
-                    date = str(acquisition_date)
-                    time = str(acquisition_time)
-                    acquisition_date_time_correct = f"{date[:4]}-{date[4:6]}-{date[6:8]}T{time[:2]}:{time[2:4]}:{time[4:6]}.000"
-                    #acquisition_date_time_correct = aquisition_date_pattern_comp.search(acquisition_date_time)
-                    #time_values = list(int (x) for x in acquisition_date_time_check.groups())
+                if acquisition_date_time == "n/a":
+                    acquisition_date = json_file.get("AcquisitionDate", "n/a")
+                    acquisition_time = json_file.get("AcquisitionTime", "n/a")
+                    if acquisition_date == "n/a":
+                        acquisition_date = "15000101"
+                    if acquisition_time == "n/a":
+                        acquisition_time = "000000"
+                    if "." not in acquisition_time:
+                        acquisition_time += ".000000"
+                    acquisition_date_time = acquisition_date + acquisition_time
+                if "T" in acquisition_date_time:
+                    acquisition_date_time = datetime.strptime(acquisition_date_time, "%Y-%m-%dT%H:%M:%S.%f")
                 else:
-                    if acquisition_date_time == "n/a":
-                        acquisition_date_time_correct = "n/a"
-                    else:
-                        acquisition_date_time_check = aquisition_date_pattern_comp.search(acquisition_date_time)
-                        try:
-                            if acquisition_date_time_check.group("fecha1"):
-                                    acquisition_date_time_correct = f'\
-{int(acquisition_date_time_check.group("year")):04d}-\
-{int(acquisition_date_time_check.group("month")):02d}-\
-{int(acquisition_date_time_check.group("day")):02d}T\
-{int(acquisition_date_time_check.group("hour")):02d}:\
-{int(acquisition_date_time_check.group("minutes")):02d}:\
-{int(acquisition_date_time_check.group("seconds")):02d}.\
-{int(acquisition_date_time_check.group("ms")):06d}\
-'
-                            else:
-                                acquisition_date_time_correct = f'\
-{int(acquisition_date_time_check.group("year2")):04d}-\
-{int(acquisition_date_time_check.group("month2")):02d}-\
-{int(acquisition_date_time_check.group("day2")):02d}T\
-{int(acquisition_date_time_check.group("hour2")):02d}:\
-{int(acquisition_date_time_check.group("minutes2")):02d}:\
-{int(acquisition_date_time_check.group("seconds2")):02d}.\
-{int(acquisition_date_time_check.group("ms2")):06d}\
-'
-                        except AttributeError as e:
-                            print("error de formato:", acquisition_date_time)
-                        
-                acquisition_date_time = datetime.fromisoformat(acquisition_date_time_correct) if acquisition_date_time_correct != "n/a" else "n/a"
-                # adquisition_date_time = datetime.fromisoformat(json_file[participants_keys[5]].split('T')[0])
+                    acquisition_date_time = datetime.strptime(acquisition_date_time, "%Y%m%d%H%M%S.%f")
                 if patient_birthday != "n/a" and acquisition_date_time != "n/a":
                     patient_ages.append(int((acquisition_date_time - patient_birthday).days / (365.25)))
 
@@ -434,11 +425,12 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
                 accesion_number =  json_file['AccessionNumber']
             except KeyError:
                 accesion_number = "n/a"
+            print("acquisition_date_time", str(acquisition_date_time))
             list_sessions_information.append({
                  key:value
                  for key, value in zip(
                     session_header,
-                    [session, accesion_number, str(acquisition_date_time), report]
+                    [session, accesion_number, acquisition_date_time.isoformat(), report]
                  )
 
             })
