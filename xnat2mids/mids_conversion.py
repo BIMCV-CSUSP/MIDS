@@ -143,43 +143,22 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part, debug_le
                     Protocol_name = dict_json.get("ProtocolName", "n/a")
                     image_type = dict_json.get("ImageType", "n/a")
                     body_part = dict_json.get("BodyPartExamined", body_part).lower()
-                    acquisition_date_time = dict_json.get("AcquisitionDateTime", "n/a")
-                    acquisition_date = dict_json.get("AcquisitionDate", "n/a")
-                    acquisition_time = dict_json.get("AcquisitionTime", "n/a")
-                    acquisition_time_zone = dict_json.get("TimezoneOffsetFromUTC", "+0000")
-
-                    if (acquisition_date != "n/a") and acquisition_time != "n/a":
-                        date = str(acquisition_date)
-                        time = str(acquisition_time)
-                        acquisition_date_time_correct = f"{date[:4]}-{date[4:6]}-{date[6:8]}T{time[:2]}:{time[2:4]}:{time[4:6]}.000"
+                    acquisition_date_time = json_file.get("AcquisitionDateTime", "n/a")
+                    if acquisition_date_time == "n/a":
+                        acquisition_date = json_file.get("AcquisitionDate", "n/a")
+                        acquisition_time = json_file.get("AcquisitionTime", "n/a")
+                        if acquisition_date == "n/a":
+                            acquisition_date = "15000101"
+                        if acquisition_time == "n/a":
+                            acquisition_time = "000000"
+                        acquisition_date_time = acquisition_date + acquisition_time
+                    if "." not in acquisition_date_time:
+                        acquisition_date_time += ".000000"
+                        
+                    if "T" in acquisition_date_time:
+                        acquisition_date_time = datetime.strptime(acquisition_date_time, "%Y-%m-%dT%H:%M:%S.%f")
                     else:
-                        if acquisition_date_time == "n/a":
-                            acquisition_date_time_correct = "1500-01-01T12:00:00"
-                        else:
-                            acquisition_date_time_check = aquisition_date_pattern_comp.search(acquisition_date_time)
-                            try:
-                                if acquisition_date_time_check.group("fecha1"):
-                                    acquisition_date_time_correct = f'\
-{int(acquisition_date_time_check.group("year")):04d}-\
-{int(acquisition_date_time_check.group("month")):02d}-\
-{int(acquisition_date_time_check.group("day")):02d}T\
-{int(acquisition_date_time_check.group("hour")):02d}:\
-{int(acquisition_date_time_check.group("minutes")):02d}:\
-{int(acquisition_date_time_check.group("seconds")):02d}.\
-{int(acquisition_date_time_check.group("ms")):06d}\
-'
-                                else:
-                                    acquisition_date_time_correct = f'\
-{int(acquisition_date_time_check.group("year2")):04d}-\
-{int(acquisition_date_time_check.group("month2")):02d}-\
-{int(acquisition_date_time_check.group("day2")):02d}T\
-{int(acquisition_date_time_check.group("hour2")):02d}:\
-{int(acquisition_date_time_check.group("minutes2")):02d}:\
-{int(acquisition_date_time_check.group("seconds2")):02d}.\
-{int(acquisition_date_time_check.group("ms2")):06d}\
-'
-                            except AttributeError as e:
-                                print("error de formato:", acquisition_date_time)
+                        acquisition_date_time = datetime.strptime(acquisition_date_time, "%Y%m%d%H%M%S.%f")
                     if modality == "MR":
                         #convert data to nifti
                         #if series_description not in BIOFACE_PROTOCOL_NAMES: continue
@@ -363,9 +342,10 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
                         acquisition_date = "15000101"
                     if acquisition_time == "n/a":
                         acquisition_time = "000000"
-                    if "." not in acquisition_time:
-                        acquisition_time += ".000000"
                     acquisition_date_time = acquisition_date + acquisition_time
+                if "." not in acquisition_date_time:
+                    acquisition_date_time += ".000000"
+                    
                 if "T" in acquisition_date_time:
                     acquisition_date_time = datetime.strptime(acquisition_date_time, "%Y-%m-%dT%H:%M:%S.%f")
                 else:
