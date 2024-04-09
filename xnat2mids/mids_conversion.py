@@ -143,10 +143,10 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part, debug_le
                     Protocol_name = dict_json.get("ProtocolName", "n/a")
                     image_type = dict_json.get("ImageType", "n/a")
                     body_part = dict_json.get("BodyPartExamined", body_part).lower()
-                    acquisition_date_time = json_file.get("AcquisitionDateTime", "n/a")
+                    acquisition_date_time = dict_json.get("AcquisitionDateTime", "n/a")
                     if acquisition_date_time == "n/a":
-                        acquisition_date = json_file.get("AcquisitionDate", "n/a")
-                        acquisition_time = json_file.get("AcquisitionTime", "n/a")
+                        acquisition_date = dict_json.get("AcquisitionDate", "n/a")
+                        acquisition_time = dict_json.get("AcquisitionTime", "n/a")
                         if acquisition_date == "n/a":
                             acquisition_date = "15000101"
                         if acquisition_time == "n/a":
@@ -184,13 +184,13 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part, debug_le
                                 print(f"KeyError: {e}")
                                 continue
                             procedure_class_mr.control_sequences(
-                                folder_conversion, mids_session_path, session_name, dict_json, protocol, acq, dir_, folder_BIDS, acquisition_date_time_correct, body_part
+                                folder_conversion, mids_session_path, session_name, dict_json, protocol, acq, dir_, folder_BIDS, acquisition_date_time, body_part
                             )
                         
                             with Path('logfile_MIDS.log').open("a") as file_:
                                 file_.write(f"{series_description}--->{(protocol, acq, task, ce, rec, dir_, part, folder_BIDS)}\n\t{path_dicoms}\n")
                             
-                    if modality in ["OP", "SC", "XC", "OT", "SM", "BF"]:
+                    if modality in ["OP", "SC", "XC", "OT", "SM", "BF"]: # opt , oct
                         
                         
                         folder_conversion = dicom2png(path_dicoms) #.joinpath("resources")
@@ -205,7 +205,7 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part, debug_le
                             modality_,
                             acq, 
                             laterality, 
-                            acquisition_date_time_correct, 
+                            acquisition_date_time, 
                             body_part)
                     
                     if modality in ["CR", "DX"]:
@@ -222,7 +222,7 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part, debug_le
                             session_name, 
                             modality_,
                             laterality,
-                            acquisition_date_time_correct, 
+                            acquisition_date_time, 
                             body_part
                         )
                     
