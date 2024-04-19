@@ -144,17 +144,18 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part, debug_le
                     image_type = dict_json.get("ImageType", "n/a")
                     body_part = dict_json.get("BodyPartExamined", body_part).lower()
                     acquisition_date_time = dict_json.get("AcquisitionDateTime", "n/a")
-                    if acquisition_date_time == "n/a":
+                    if acquisition_date_time == "n/a" or acquisition_date_time == "":
                         acquisition_date = dict_json.get("AcquisitionDate", "n/a")
                         acquisition_time = dict_json.get("AcquisitionTime", "n/a")
-                        if acquisition_date == "n/a":
+                        if acquisition_date == "n/a" or acquisition_date == "":
                             acquisition_date = "15000101"
-                        if acquisition_time == "n/a":
+                        if acquisition_time == "n/a" or acquisition_time == "":
                             acquisition_time = "000000"
                         acquisition_date_time = acquisition_date + acquisition_time
+                    print(acquisition_date_time)
                     if "." not in acquisition_date_time:
                         acquisition_date_time += ".000000"
-                        
+                    print(acquisition_date_time)  
                     if "T" in acquisition_date_time:
                         acquisition_date_time = datetime.strptime(acquisition_date_time, "%Y-%m-%dT%H:%M:%S.%f")
                     else:
@@ -193,8 +194,12 @@ def create_directory_mids_v1(xnat_data_path, mids_data_path, body_part, debug_le
                     if modality in ["OP", "SC", "XC", "OT", "SM", "BF"]: # opt , oct
                         
                         
-                        folder_conversion = dicom2png(path_dicoms) #.joinpath("resources")
+                        
                         modality_, mim= (("op", "mim-light/op") if modality in ["OP", "SC", "XC", "OT"] else ("BF", "micr"))
+                        if modality_ == "op":
+                            folder_conversion = dicom2png(path_dicoms) #.joinpath("resources")
+                        else:
+                            folder_conversion = path_dicoms
                         laterality = dict_json.get("Laterality")
                         acq = "" if "ORIGINAL" in image_type else "opacitysubstract"
                         procedure_class_light.control_image(
@@ -335,12 +340,12 @@ def create_tsvs(xnat_data_path, mids_data_path, body_part_aux):
                 except KeyError as e:
                     patient_sex = "n/a"
                 acquisition_date_time = json_file.get("AcquisitionDateTime", "n/a")
-                if acquisition_date_time == "n/a":
+                if acquisition_date_time == "n/a" or acquisition_date_time == "":
                     acquisition_date = json_file.get("AcquisitionDate", "n/a")
                     acquisition_time = json_file.get("AcquisitionTime", "n/a")
-                    if acquisition_date == "n/a":
+                    if acquisition_date == "n/a" or acquisition_date == "":
                         acquisition_date = "15000101"
-                    if acquisition_time == "n/a":
+                    if acquisition_time == "n/a" or acquisition_time == "":
                         acquisition_time = "000000"
                     acquisition_date_time = acquisition_date + acquisition_time
                 if "." not in acquisition_date_time:
