@@ -12,12 +12,14 @@ class LightProcedure(Procedures):
         self.run_dict = {}
 
     def control_image(self, folder_conversion, mids_session_path, dict_json, session_name, protocol, rec, laterality, acquisition_date_time,body_part):
-        png_files = sorted([i for i in folder_conversion.glob("*.png")])
-        #nifti_files = sorted([i for i in folder_conversion.glob("*.nii*")])
+        if protocol == "op":
+            png_files = sorted([i for i in folder_conversion.glob("*.png")])
+        else:
+            png_files = sorted([i for i in folder_conversion.glob("*.dcm")])
         
         len_files = len(png_files)
         if not len_files: return
-
+        
         key = json.dumps([session_name, rec, laterality, protocol, body_part])
         value = self.run_dict.get(key, [])
         print(acquisition_date_time)
@@ -71,9 +73,8 @@ class LightProcedure(Procedures):
         lat = f"lat-{key_list[2]}" if key_list[2] else ''
         chunk = f"chunk-{num_part+1}" if activate_chunk_partioned else ''
         mod = key_list[3]
-        # print(f"{key=}")
         return "_".join([
             part for part in [
                 sub, ses, rec, run, bp, lat, chunk, mod
-            ] if part != ''
+            ] if part.split('-')[-1] != ''
         ])
