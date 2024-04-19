@@ -107,29 +107,92 @@ def add_dicom_metadata(
     with json_filepath.open('w') as dicom_file:
         dicom_file.write(string_json)
 
-def dict2bids(dict_):
-    dicom_dict = {}
-    if len(dict_)==1:
-        dict_items = list(dict_.items())[0]
-        if dict_items[0].isdigit():
-            
-            dicom_dict[pydicom.datadict.keyword_for_tag(dict_items[0])] = dict_items[1].get("Value", [""])[0]
-            return dicom_dict
+def dictify_from_json(json_data: dict, stop_before_pixels: bool = True) -> dict:
+    """Turn a JSON object into a dict with keys derived from the keys."""
+    output = dict()
+    for key, value in json_data.items():
+        
+        if key == "Pixel Data" and stop_before_pixels:
+            continue
+        if value.get("vr") == "SQ":
+            print(value.get("Value", [""]), value.get("vr"))
+            if value.get("Value", [""]) == []:
+                output[pydicom.datadict.keyword_for_tag(key)] = ""
+            else:
+                output[pydicom.datadict.keyword_for_tag(key)] = dictify_from_json(value.get("Value", [""])[0], stop_before_pixels=stop_before_pixels)
         else:
-            return dict_items[1]
-    else:
-        for key, element in dict_.items():
-            
-            description = pydicom.datadict.keyword_for_tag(key)
-            
-            elem = element.get("Value", [""]) if element.get("Value", [""]) else [""]#, type(element.get("Value", [""])[0]),type(element.get("Value", [""])[0]) is not dict )
-            elem = elem[0] if len(elem)<2 else elem
-            dicom_dict[description] = elem if type(elem) is not dict else dict2bids(element.get("Value", [""])[0])
-            
-    return dicom_dict
+            if len(value.get("Value", [""])) >1:
+                output[pydicom.datadict.keyword_for_tag(key)] = str(value.get("Value", [""]))
+            else:
+                output[pydicom.datadict.keyword_for_tag(key)] = str(value.get("Value", [""])[0])
+    return output
+
+
 
 def generate_json_dicom(folder_json):
     json_file = load_json(folder_json.joinpath("dicom.json"))
-    json_dict = dict2bids(json_file)
+    
+    json_dict = dictify_from_json(json_file)
     save_json(json_dict, folder_json.joinpath("bids.json"))
     return json_dict
+
+def convert_value_to_type(value, vr):
+    """Convert the value to the corresponding data type based on the VR."""
+    if vr == 'AE':  # Application Entity
+        return str(value)
+    elif vr == 'AS':  # Age String
+        return str(value)
+    elif vr == 'AT':  # Attribute Tag
+        return str(value)
+    elif vr == 'CS':  # Code String
+        return str(value)
+    elif vr == 'DA':  # Date
+        return str(value)
+    elif vr == 'DS':  # Decimal String
+        return float(value)
+    elif vr == 'DT':  # Date Time
+        return str(value)
+    elif vr == 'FL':  # Floating Point Single
+        return float(value)
+    elif vr == 'FD':  # Floating Point Double
+        return float(value)
+    elif vr == 'IS':  # Integer String
+        return int(value)
+    elif vr == 'LO':  # Long String
+        return str(value)
+    elif vr == 'LT':  # Long Text
+        return str(value)
+    elif vr == 'OB':  # Other Byte String
+        return bytes(value)
+    elif vr == 'OF':  # Other Float String
+        return float(value)
+    elif vr == 'OW':  # Other Word String
+        return bytes(value)
+    elif vr == 'PN':  # Person Name
+        return str(value)
+    elif vr == 'SH':  # Short String
+        return str(value)
+    elif vr == 'SL':  # Signed Long
+        return int(value)
+    elif vr == 'SQ':  # Sequence of Items
+        # You may need to handle this differently based on your specific use case
+        return value
+    elif vr == 'SS':  # Signed Short
+        return int(value)
+    elif vr == 'ST':  # Short Text
+        return str(value)
+    elif vr == 'TM':  # Time
+        return str(value)
+    elif vr == 'UI':  # Unique Identifier (UID)
+        return str(value)
+    elif vr == 'UL':  # Unsigned Long
+        return int(value)
+    elif vr == 'UN':  # Unknown
+        return value
+    elif vr == 'US':  # Unsigned Short
+        return int(value)
+    elif vr == 'UT':  # Unlimited Text
+        return str(value)
+    else:
+        # Handle unsupported VRs or unknown VRs
+        return value
