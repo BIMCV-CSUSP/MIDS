@@ -6,8 +6,8 @@ import numpy
 from shutil import copyfile
 from datetime import datetime
 from xnat2mids.procedures import Procedures
-
-body_part_bids = ['head','brain']
+import SimpleITK as sitk
+body_part_bids = ['head', 'brain', 'skull']
 
 class ProceduresMR(Procedures):
     def __init__(self):
@@ -62,7 +62,7 @@ class ProceduresMR(Procedures):
         ]
         
         
-        key = json.dumps([session_name, acq_label, dir_, bp_label[0], vp_label, protocol_label])
+        key = json.dumps([session_name, acq_label, dir_, bp_label, vp_label, protocol_label])
         value = self.run_dict.get(key, [])
         value.append({
             "run":nifti_files, 
